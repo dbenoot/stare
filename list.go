@@ -1,10 +1,3 @@
-/* TODO
-
-- list all pages
-- list all galleries
-
-*/
-
 package main
 
 import (

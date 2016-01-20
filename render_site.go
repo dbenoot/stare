@@ -1,6 +1,6 @@
 /* TODO
 
-- delete the rendered folder
+- delete the current rendered folder
 - resize pictures and create thumbnails (x_thumb.jpg)
 - create gallery.html and the separate gallery pages, based on templates (gallery_template.html and subgallery_template.html)
 - move all galleries from dist/gallery to dist/rendered/gallery

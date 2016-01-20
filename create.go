@@ -1,4 +1,9 @@
-/* copy page from main_template file */
+/* TODO
+
+- copy page from main_template file 
+- create gallery folder
+
+*/
 
 package main
 

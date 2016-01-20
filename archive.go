@@ -1,5 +1,3 @@
-/* archive a page to dist/archive */
-
 package main
 
 import (
