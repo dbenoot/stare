@@ -1,6 +1,8 @@
 /* TODO
 
-- list of all pages and galleries
+- refine list command output
+- create render engine
+- create creation engine
 
 */
 

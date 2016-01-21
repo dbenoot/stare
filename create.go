@@ -9,8 +9,8 @@ package main
 
 import (
     "fmt"
-    /*"os"
-    "path/filepath"*/
+    "os"
+    "path/filepath"
 )
 
 func create_page(pagename string) {
@@ -20,10 +20,11 @@ func create_page(pagename string) {
     os.MkdirAll("." + string(filepath.Separator) + pagename + string(filepath.Separator) + "rendered",0755)*/
     
     fmt.Println("Creating page " + pagename)
-/*    copy("pages" + string(filepath.Separator) + pagename+".html", "archive" + string(filepath.Separator) + "pages" + string(filepath.Separator) + pagename + ".html")*/
+    copy("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + pagename + ".html")
 
 }
 
 func create_gallery(galleryname string) {
     fmt.Println("Creating gallery " + galleryname)
+    os.MkdirAll("." + string(filepath.Separator) + "gallery" + string(filepath.Separator) + galleryname ,0755)
 }
