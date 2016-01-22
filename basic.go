@@ -2,10 +2,8 @@ package main
 
 import (
     "io"
-    "io/ioutil"
     "os"
     "fmt"
-    "path/filepath"
     )
     
 func copy(inputname, outputname string) {
@@ -34,14 +32,73 @@ func move (inputname, outputname string) {
        }
 }
 
-func list (folder string) {
-    files, _ := filepath.Glob(folder)
-    fmt.Println(files)
-}
+func copydir(source string, dest string) (err error) {
 
-func listdir (folder string) {
-    files, _ := ioutil.ReadDir(folder)
-    for _, f := range files {
-    fmt.Println(f.Name())
-    }
-}
+     // get properties of source dir
+     sourceinfo, err := os.Stat(source)
+     if err != nil {
+         return err
+     }
+
+     // create dest dir
+
+     err = os.MkdirAll(dest, sourceinfo.Mode())
+     if err != nil {
+         return err
+     }
+
+     directory, _ := os.Open(source)
+
+     objects, err := directory.Readdir(-1)
+
+     for _, obj := range objects {
+
+         sourcefilepointer := source + "/" + obj.Name()
+
+         destinationfilepointer := dest + "/" + obj.Name()
+
+
+         if obj.IsDir() {
+             // create sub-directories - recursively
+             err = copydir(sourcefilepointer, destinationfilepointer)
+             if err != nil {
+                 fmt.Println(err)
+             }
+         } else {
+             // perform copy
+             err = copyfile(sourcefilepointer, destinationfilepointer)
+             if err != nil {
+                 fmt.Println(err)
+             }
+         }
+
+     }
+     return
+ }
+ 
+func copyfile(source string, dest string) (err error) {
+     sourcefile, err := os.Open(source)
+     if err != nil {
+         return err
+     }
+
+     defer sourcefile.Close()
+
+     destfile, err := os.Create(dest)
+     if err != nil {
+         return err
+     }
+
+     defer destfile.Close()
+
+     _, err = io.Copy(destfile, sourcefile)
+     if err == nil {
+         sourceinfo, err := os.Stat(source)
+         if err != nil {
+             err = os.Chmod(dest, sourceinfo.Mode())
+         }
+
+     }
+
+     return
+ }

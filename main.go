@@ -57,7 +57,7 @@ func main() {
 	}
 
 	if renderCommand.Parsed() {
-		fmt.Printf("Rendering!\n")
+		render_site()
 	}
 
 	if listCommand.Parsed() {

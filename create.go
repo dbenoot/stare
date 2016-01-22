@@ -1,6 +1,13 @@
 /* TODO
 
-- copy page from main_template file 
+- add metadata to new page: 
+    - date and time of creation
+    - availability in the menu
+    - order in the menu
+    - draft
+- add metadata to new gallery
+    - date and time of creation
+    - draft
 - create gallery folder
 
 */
