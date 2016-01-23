@@ -21,6 +21,7 @@ import (
         "path/filepath"
         "fmt"
         "github.com/go-ini/ini"
+        "strconv"
 )
 
 func render_site() {
@@ -49,6 +50,8 @@ func render_site() {
         item, _ := filepath.Glob("temp/pages/*.html")
         all_pages := []string{}
         menu_item := []string{}
+        menu := make(map[int64]string)
+        
         i := 0
         
         for i < len(item) {
@@ -69,16 +72,21 @@ func render_site() {
                                 k := 1
                                 for k < 5 {
                                         if lines[k] == "in_menu" {
+                                                menu_order, _ := strconv.ParseInt(strings.Split(lines[2], "_", )[2], 0, 64)
+                                                // menu_item[menu_order] = strings.Split(item[i], "/")[2]
                                                 menu_item = append(menu_item, strings.Split(item[i], "/")[2])
+                                                menu[menu_order] = item[i]
                                         }
                                         k += 1
+                                       
+                                        
                                 }
                         }
                 j += 1
                 }
         i += 1
         }
-        
+         fmt.Println(menu[1])
         // fmt.Println("allpages: ", all_pages)
         // fmt.Println("menu_item: ", menu_item)
         
@@ -87,10 +95,21 @@ func render_site() {
         copyfile("templates/navbar_template.html", "temp/navbar.html")        
         i = 0
         for i < len(menu_item) {
+                
+                var orig_link string = menu[int64(i+1)]
+                page_link := strings.Split(orig_link,"/")[1] + "/" + strings.Split(orig_link,"/")[2]
+                page_name := strings.Split(strings.Split(orig_link,"/")[2], ".")[0]
+                
                 if i+1 < len(menu_item) {
                         inject_nav_items("temp/navbar.html", "<<~~NAVLIST~~>>", "templates/nav_item.html")
+
+                        substitute("temp/navbar.html", "<<~~NAVLINK~~>>",page_link)
+                        substitute("temp/navbar.html", "<<~~NAVITEM~~>>",page_name)
                 } else {
                         inject_last_nav_item("temp/navbar.html", "<<~~NAVLIST~~>>", "templates/nav_item.html")
+                        
+                        substitute("temp/navbar.html", "<<~~NAVLINK~~>>",page_link)
+                        substitute("temp/navbar.html", "<<~~NAVITEM~~>>",page_name)
                 }
                 i += 1
         }
@@ -99,11 +118,14 @@ func render_site() {
         
         i = 0
         for i < len(all_pages) {
-                inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
-                substitute(all_pages[i], "<<~~NAVACTIVE~~>>","replace1")
-                substitute(all_pages[i], "<<~~NAVLINK~~>>","replace2")
-                substitute(all_pages[i], "<<~~NAVITEM~~>>","replace3")
                 substitute(all_pages[i], "<<~~TITLE~~>>",site_title)
+                inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
+                
+                        // substitute(all_pages[i], "<<~~NAVACTIVE~~>>","replace1")
+                        // substitute(all_pages[i], "<<~~NAVLINK~~>>","replace2")
+                        // substitute(all_pages[i], "<<~~NAVITEM~~>>","replace3")
+                
+                
                 i += 1
         }
 
