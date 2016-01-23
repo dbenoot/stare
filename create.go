@@ -55,8 +55,8 @@ func create_page(pagename string) {
                     return
                     }
                 prepend("menu_order_"+menuorder, "pages/"+pagename+".html")
-        
-
+        } else {
+            prepend("no_menu_order\nno_menu", "pages/"+pagename+".html")
         }
 
 

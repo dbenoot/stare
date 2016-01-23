@@ -41,21 +41,50 @@ func render_site() {
         /* create navlist */
         
         item, _ := filepath.Glob("temp/pages/*.html")
-        navlist_pages := []string{}
-        navlist_item := []string{}
+        all_pages := []string{}
+        menu_item := []string{}
         i := 0
+        
         for i < len(item) {
-                navlist_pages = append(navlist_pages, item[i])
-                navlist_item = append(navlist_item, strings.Split(item[i], "/")[2])
-                i += 1
+        
+                // check whether the page is posted
+                
+                input, err := ioutil.ReadFile(item[i])
+                if err != nil {
+                        log.Fatalln(err)
+                }
+        
+                lines := strings.Split(string(input), "\n")
+                
+                j := 1
+                for j < 5  {
+                        if lines[j] == "posted" {
+                                fmt.Println(lines[j])
+                                all_pages = append(all_pages, item[i])
+                                k := 1
+                                for k < 5 {
+                                        if lines[k] == "in_menu" {
+                                                fmt.Println(lines[k])
+                                                menu_item = append(menu_item, strings.Split(item[i], "/")[2])
+                                        }
+                                        k += 1
+                                }
+                        }
+                fmt.Println(j," - ",lines[j])
+                j += 1
+                }
+        i += 1
         }
+        
+        fmt.Println("allpages: ", all_pages)
+        fmt.Println("menu_item: ", menu_item)
         
         /* copy the navbar template to the temp folder and add the correct amount of navitems to the navbar */
 
-        copy("templates/navbar_template.html", "temp/navbar.html")        
+        copyfile("templates/navbar_template.html", "temp/navbar.html")        
         i = 0
-        for i < len(navlist_item) {
-                if i+1 < len(navlist_item) {
+        for i < len(menu_item) {
+                if i+1 < len(menu_item) {
                         inject_nav_items("temp/navbar.html", "<<~~NAVLIST~~>>", "templates/nav_item.html")
                 } else {
                         inject_last_nav_item("temp/navbar.html", "<<~~NAVLIST~~>>", "templates/nav_item.html")
@@ -66,11 +95,11 @@ func render_site() {
         /* add navbar to the pages and resolve the ties NAVACTIVE, NAVLINK, NAVITEM */ 
         
         i = 0
-        for i < len(navlist_pages) {
-                inject_html(navlist_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
-                substitute(navlist_pages[i], "<<~~NAVACTIVE~~>>","replace1")
-                substitute(navlist_pages[i], "<<~~NAVLINK~~>>","replace2")
-                substitute(navlist_pages[i], "<<~~NAVITEM~~>>","replace3")
+        for i < len(all_pages) {
+                inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
+                substitute(all_pages[i], "<<~~NAVACTIVE~~>>","replace1")
+                substitute(all_pages[i], "<<~~NAVLINK~~>>","replace2")
+                substitute(all_pages[i], "<<~~NAVITEM~~>>","replace3")
                 i += 1
         }
 
