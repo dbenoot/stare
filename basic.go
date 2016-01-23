@@ -6,23 +6,6 @@ import (
     "fmt"
     )
     
-func copy(inputname, outputname string) {
-     readfile, err := os.Open(inputname)
-     if err != nil {
-         fmt.Println("Input file not available.\n")
-     }
-     defer readfile.Close()
-
-     writefile, err := os.Create(outputname)
-     if err != nil {
-         fmt.Println("Output file could not be created. Please check that the standard folder structure is available.\n")
-     }
-     defer writefile.Close()
-
-     // do the actual work
-     io.Copy(writefile, readfile)
-}
-
 func move (inputname, outputname string) {
        err :=  os.Rename(inputname, outputname)
 
