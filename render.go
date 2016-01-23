@@ -83,6 +83,22 @@ func render_site() {
 
 }
 
+func prepend(text, file string){
+        input, err := ioutil.ReadFile(file)
+        if err != nil {
+                log.Fatalln(err)
+        }
+        
+        lines := strings.Split(string(input), "\n")
+        new_lines := append([]string{text}, lines...)
+
+        output := strings.Join(new_lines, "\n")
+        err = ioutil.WriteFile(file, []byte(output), 0644)
+        if err != nil {
+                log.Fatalln(err)
+        }    
+}
+
 func substitute (file, tie, replacetext string) {
         input, err := ioutil.ReadFile(file)
         if err != nil {

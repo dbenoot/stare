@@ -18,6 +18,10 @@ import (
     "fmt"
     "os"
     "path/filepath"
+    "time"
+    //"io/ioutil"
+    //"log"
+    //"strings"
 )
 
 func create_page(pagename string) {
@@ -27,7 +31,37 @@ func create_page(pagename string) {
     os.MkdirAll("." + string(filepath.Separator) + pagename + string(filepath.Separator) + "rendered",0755)*/
     
     fmt.Println("Creating page " + pagename)
-    copy("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + pagename + ".html")
+    copyfile("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + pagename + ".html")
+    
+    
+    page := string("pages/"+pagename+".html")
+    fmt.Println(page)
+    
+    now := time.Now().Format(time.RFC1123)
+    prepend("in_draft\n~~>>", "pages/"+pagename+".html")
+    
+    var menuyn string
+    fmt.Println("Present in menubar (y/n)")
+            if _, err := fmt.Scanf("%s", &menuyn); err != nil {
+            fmt.Printf("%s\n", err)
+            return
+        }
+        if menuyn == "y" {
+            prepend("in_menu", "pages/"+pagename+".html")
+                var menuorder string
+                    fmt.Println("Place in menubar (0-9)")
+                    if _, err := fmt.Scanf("%s", &menuorder); err != nil {
+                        fmt.Printf("%s\n", err)
+                    return
+                    }
+                prepend("menu_order_"+menuorder, "pages/"+pagename+".html")
+        
+
+        }
+
+
+
+    prepend("<<~~\n"+now, "pages/"+pagename+".html")
 
 }
 

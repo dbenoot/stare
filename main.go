@@ -26,6 +26,12 @@ func main() {
 	pageArchiveFlag := archiveCommand.String("page", "", "Name of the page to be archived.")
 	gallerypageArchiveFlag := archiveCommand.String("gallery", "", "Name of the gallery to be archived.")
 
+	postCommand := flag.NewFlagSet("post", flag.ExitOnError)
+	pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
+
+	unpostCommand := flag.NewFlagSet("unpost", flag.ExitOnError)
+	pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
+
     listCommand := flag.NewFlagSet("list", flag.ExitOnError)
 	
 	if len(os.Args) == 1 {
@@ -36,6 +42,10 @@ func main() {
 		fmt.Println(" create")
 		fmt.Println("   -page     Creates a new page")
 		fmt.Println("   -gallery  Create a new gallery\n")
+		fmt.Println(" post")
+		fmt.Println("   -page     Posts a page\n")
+		fmt.Println(" unpost")
+		fmt.Println("   -page     Unposts a page\n")
 		fmt.Println(" archive     Archives a page.")
 		fmt.Println("   -page     Archives a page")
 		fmt.Println("   -gallery  Archives a gallery\n")
@@ -51,6 +61,10 @@ func main() {
 		archiveCommand.Parse(os.Args[2:])
 	case "list":
 	    listCommand.Parse(os.Args[2:])
+	case "post":
+		postCommand.Parse(os.Args[2:])
+	case "unpost":
+		unpostCommand.Parse(os.Args[2:])
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
@@ -104,6 +118,14 @@ func main() {
             archive_gallery(*gallerypageArchiveFlag)
             return
         }
+	}
+	
+	if postCommand.Parsed() {
+		post_page(*pagePostFlag)
+	}
+
+	if unpostCommand.Parsed() {
+		unpost_page(*pageUnpostFlag)
 	}
 
     
