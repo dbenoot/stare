@@ -20,6 +20,7 @@ import (
         "os"
         "path/filepath"
         "fmt"
+        "github.com/go-ini/ini"
 )
 
 func render_site() {
@@ -38,6 +39,11 @@ func render_site() {
         copydir("./pages", "./temp/pages")
         copydir("./gallery", "./temp/gallery")
         
+        /* load ini file */
+        
+        cfg, _ := ini.Load("config.ini")
+        site_title := cfg.Section("general").Key("title").String()
+
         /* create navlist */
         
         item, _ := filepath.Glob("temp/pages/*.html")
@@ -59,25 +65,22 @@ func render_site() {
                 j := 1
                 for j < 5  {
                         if lines[j] == "posted" {
-                                fmt.Println(lines[j])
                                 all_pages = append(all_pages, item[i])
                                 k := 1
                                 for k < 5 {
                                         if lines[k] == "in_menu" {
-                                                fmt.Println(lines[k])
                                                 menu_item = append(menu_item, strings.Split(item[i], "/")[2])
                                         }
                                         k += 1
                                 }
                         }
-                fmt.Println(j," - ",lines[j])
                 j += 1
                 }
         i += 1
         }
         
-        fmt.Println("allpages: ", all_pages)
-        fmt.Println("menu_item: ", menu_item)
+        // fmt.Println("allpages: ", all_pages)
+        // fmt.Println("menu_item: ", menu_item)
         
         /* copy the navbar template to the temp folder and add the correct amount of navitems to the navbar */
 
@@ -100,6 +103,7 @@ func render_site() {
                 substitute(all_pages[i], "<<~~NAVACTIVE~~>>","replace1")
                 substitute(all_pages[i], "<<~~NAVLINK~~>>","replace2")
                 substitute(all_pages[i], "<<~~NAVITEM~~>>","replace3")
+                substitute(all_pages[i], "<<~~TITLE~~>>",site_title)
                 i += 1
         }
 
