@@ -97,7 +97,7 @@ func render_site() {
         for i < len(menu_item) {
                 
                 var orig_link string = menu[int64(i+1)]
-                page_link := strings.Split(orig_link,"/")[1] + "/" + strings.Split(orig_link,"/")[2]
+                page_link := strings.Split(orig_link,"/")[2] //this is not correct for the index.html
                 page_name := strings.Split(strings.Split(orig_link,"/")[2], ".")[0]
                 
                 if i+1 < len(menu_item) {
