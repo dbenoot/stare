@@ -4,7 +4,7 @@
 - resize pictures and create thumbnails (x_thumb.jpg)
 - create gallery.html and the separate gallery pages, based on templates (gallery_template.html and subgallery_template.html)
 - move all galleries from dist/gallery to dist/rendered/gallery
-- move all pages from dist/pages to dist/rendered/pages, move index.html to dist/rendered
+- move all pages from dist/pages to dist/rendered/pages, move index.html to dist/rendered, create gallery.html in dist/pages
 - move all css/js/... from dist/src to dist/rendered/
 - replace all placeholders with correct html (<<~~INDEX~~>>, <<~~PAGES~~>>, <<~~TITLE~~>>, <<~~NAVBAR~~>>, <<~~NAVLIST~~>>, <<~~FOOTER~~>>, <<~~JS~~>>, <<~~CSS~~>>, <<~~FONTS~~>>)
 - order should be -> NAVBAR and FOOTER, then all the rest, as the NAVBAR and FOOTER can also contain <<~~X~~>> links
@@ -140,11 +140,15 @@ func render_site() {
                 }
                 
                 remove_header(all_pages[i])
+                //fmt.Println(all_pages[1], "rendered/pages/"+strings.Split(all_pages[1],"/")[2])
+                copyfile(all_pages[i], "rendered/pages/"+strings.Split(all_pages[i],"/")[2])
                 i += 1
                 
         }
 
         /* resize pictures */
+        
+        
         
         /* create gallery.html and sub-galleries */
         

@@ -67,5 +67,10 @@ func create_page(pagename string) {
 
 func create_gallery(galleryname string) {
     fmt.Println("Creating gallery " + galleryname)
-    os.MkdirAll("." + string(filepath.Separator) + "gallery" + string(filepath.Separator) + galleryname ,0755)
+    os.MkdirAll("pages" + string(filepath.Separator) + "gallery" + string(filepath.Separator) + galleryname ,0755)
+    
+    if _, err := os.Stat("pages/gallery.html"); os.IsNotExist(err) {
+        copyfile("templates/gallery_template.html", "pages/gallery.html")
+        
+    }
 }
