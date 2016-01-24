@@ -78,55 +78,70 @@ func render_site() {
                                                 menu[menu_order] = item[i]
                                         }
                                         k += 1
-                                       
-                                        
                                 }
                         }
                 j += 1
                 }
         i += 1
         }
-         fmt.Println(menu[1])
-        // fmt.Println("allpages: ", all_pages)
-        // fmt.Println("menu_item: ", menu_item)
         
+        // reversed_menu := make(map[string]int64)
+
+        // for key,value := range menu {
+        //         reversed_menu[value] = key
+        // }
+
         /* copy the navbar template to the temp folder and add the correct amount of navitems to the navbar */
 
         copyfile("templates/navbar_template.html", "temp/navbar.html")        
-        i = 0
-        for i < len(menu_item) {
-                
-                var orig_link string = menu[int64(i+1)]
-                page_link := strings.Split(orig_link,"/")[2] //this is not correct for the index.html
-                page_name := strings.Split(strings.Split(orig_link,"/")[2], ".")[0]
-                
-                if i+1 < len(menu_item) {
-                        inject_nav_items("temp/navbar.html", "<<~~NAVLIST~~>>", "templates/nav_item.html")
 
-                        substitute("temp/navbar.html", "<<~~NAVLINK~~>>",page_link)
-                        substitute("temp/navbar.html", "<<~~NAVITEM~~>>",page_name)
-                } else {
-                        inject_last_nav_item("temp/navbar.html", "<<~~NAVLIST~~>>", "templates/nav_item.html")
-                        
-                        substitute("temp/navbar.html", "<<~~NAVLINK~~>>",page_link)
-                        substitute("temp/navbar.html", "<<~~NAVITEM~~>>",page_name)
-                }
-                i += 1
-        }
-
-        /* add navbar to the pages and resolve the ties NAVACTIVE, NAVLINK, NAVITEM */ 
+        /* add navbar to the pages and resolve the ties NAVACTIVE, NAVLINK, NAVITEM */
+        /* and resolve ties CSS, JS, PAGE */
         
         i = 0
         for i < len(all_pages) {
                 substitute(all_pages[i], "<<~~TITLE~~>>",site_title)
                 inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
+
+                j := 0
+                for j < len(menu_item) {
+                        var orig_link string = menu[int64(j)]
+                        page_link := strings.Split(orig_link,"/")[2]
+                        page_name := strings.Split(strings.Split(orig_link,"/")[2], ".")[0]
+
+                                inject_nav_items(all_pages[i], "<<~~NAVLIST~~>>", "templates/nav_item.html")
+                                if page_link == strings.Split(all_pages[i],"/")[2] {
+                                        substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "class=\"active\"")
+                                } else {
+                                        substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "")
+                                }
+                                
+                                if strings.Split(all_pages[i],"/")[2] == "index.html" {
+                                        substitute(all_pages[i], "<<~~NAVLINK~~>>","pages/"+page_link)
+                                } else {
+                                        substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
+                                }
+                                substitute(all_pages[i], "<<~~NAVITEM~~>>",page_name)
+                        j += 1
+                }
+
+                substitute(all_pages[i], "<<~~NAVLIST~~>>","")
                 
-                        // substitute(all_pages[i], "<<~~NAVACTIVE~~>>","replace1")
-                        // substitute(all_pages[i], "<<~~NAVLINK~~>>","replace2")
-                        // substitute(all_pages[i], "<<~~NAVITEM~~>>","replace3")
+                /* resolve ties CSS, JS, PAGE */
                 
+                if strings.Split(all_pages[i],"/")[2] == "index.html" {
+                        substitute(all_pages[i], "<<~~JS~~>>","js/")
+                        substitute(all_pages[i], "<<~~CSS~~>>","css/")
+                        substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
+                } else {
+                        substitute(all_pages[i], "<<~~JS~~>>","../js/")
+                        substitute(all_pages[i], "<<~~CSS~~>>","../css/")
+                        substitute(all_pages[i], "<<~~PAGE~~>>","")
+                }
                 
+                remove_header(all_pages[i])
                 i += 1
+                
         }
 
         /* resize pictures */
@@ -251,4 +266,25 @@ func inject_last_nav_item (file, tie, html_source_file string) {
         if err != nil {
                 log.Fatalln(err)
         } 
+}
+
+func remove_header (file string) {
+        input, err := ioutil.ReadFile(file)
+        if err != nil {
+                log.Fatalln(err)
+        }
+        
+        lines := strings.Split(string(input), "\n")
+        i := 0
+        for i <= 5 {
+                lines = append(lines[:0], lines[1:]...)
+                // lines[i] = strings.Replace(lines[line], tie, replacetext, -1)
+                i += 1
+        }
+        
+        output := strings.Join(lines, "\n")
+        err = ioutil.WriteFile(file, []byte(output), 0644)
+        if err != nil {
+                log.Fatalln(err)
+        }
 }
