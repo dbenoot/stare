@@ -72,5 +72,13 @@ func create_gallery(galleryname string) {
     if _, err := os.Stat("pages/gallery.html"); os.IsNotExist(err) {
         copyfile("templates/gallery_template.html", "pages/gallery.html")
         
+         now := time.Now().Format(time.RFC1123)
+        prepend("posted\n~~>>", "pages/gallery.html")    
+        prepend("in_menu", "pages/gallery.html")
+        prepend("menu_order_10", "pages/gallery.html")
+        prepend("<<~~\n"+now, "pages/gallery.html")
+        
     }
+    
+   
 }
