@@ -4,9 +4,9 @@ import (
     )
     
 func post_page (page string) {
-    substitute("pages/"+page+".html", "in_draft", "posted")
+    substitute_in_header("pages/"+page+".html", "in_draft", "posted")
 }
 
 func unpost_page (page string) {
-    substitute("pages/"+page+".html", "posted", "in_draft")
+    substitute_in_header("pages/"+page+".html", "posted", "in_draft")
 }

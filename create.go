@@ -25,20 +25,14 @@ import (
 )
 
 func create_page(pagename string) {
-    /*os.MkdirAll("." + string(filepath.Separator) + pagename + string(filepath.Separator) + "src" + string(filepath.Separator) + "gallery",0755)
-    os.MkdirAll("." + string(filepath.Separator) + pagename + string(filepath.Separator) + "src" + string(filepath.Separator) + "pages",0755)
-    os.MkdirAll("." + string(filepath.Separator) + pagename + string(filepath.Separator) + "src" + string(filepath.Separator) + "templates",0755)
-    os.MkdirAll("." + string(filepath.Separator) + pagename + string(filepath.Separator) + "rendered",0755)*/
-    
+
     fmt.Println("Creating page " + pagename)
     copyfile("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + pagename + ".html")
-    
-    
-    page := string("pages/"+pagename+".html")
-    fmt.Println(page)
-    
+
+//    page := string("pages/"+pagename+".html")
+
     now := time.Now().Format(time.RFC1123)
-    prepend("in_draft\n~~>>", "pages/"+pagename+".html")
+    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+pagename+".html")
     
     var menuyn string
     fmt.Println("Present in menubar (y/n)")
@@ -47,38 +41,29 @@ func create_page(pagename string) {
             return
         }
         if menuyn == "y" {
-            prepend("in_menu", "pages/"+pagename+".html")
                 var menuorder string
                     fmt.Println("Place in menubar (0-9)")
                     if _, err := fmt.Scanf("%s", &menuorder); err != nil {
                         fmt.Printf("%s\n", err)
                     return
                     }
-                prepend("menu_order_"+menuorder, "pages/"+pagename+".html")
+                var menuname string
+                    fmt.Println("Name of page in the menubar")
+                    if _, err := fmt.Scanf("%s", &menuname); err != nil {
+                        fmt.Printf("%s\n", err)
+                    return
+                    }
+            prepend("menu name       : "+menuname, "pages/"+pagename+".html")
+            prepend("menu order      : "+menuorder, "pages/"+pagename+".html")
+            prepend("present in menu : y", "pages/"+pagename+".html")
         } else {
-            prepend("no_menu_order\nno_menu", "pages/"+pagename+".html")
+            prepend("present in menu : n\nmenu order      : nap\nmenu name       : nap", "pages/"+pagename+".html")
         }
 
-
-
-    prepend("<<~~\n"+now, "pages/"+pagename+".html")
-
+    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/"+pagename+".html")
 }
 
 func create_gallery(galleryname string) {
     fmt.Println("Creating gallery " + galleryname)
     os.MkdirAll("pages" + string(filepath.Separator) + "gallery" + string(filepath.Separator) + galleryname ,0755)
-    
-    if _, err := os.Stat("pages/gallery.html"); os.IsNotExist(err) {
-        copyfile("templates/gallery_template.html", "pages/gallery.html")
-        
-         now := time.Now().Format(time.RFC1123)
-        prepend("posted\n~~>>", "pages/gallery.html")    
-        prepend("in_menu", "pages/gallery.html")
-        prepend("menu_order_10", "pages/gallery.html")
-        prepend("<<~~\n"+now, "pages/gallery.html")
-        
-    }
-    
-   
 }

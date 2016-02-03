@@ -4,6 +4,9 @@ import (
     "io"
     "os"
     "fmt"
+    "log"
+    "strings"
+    "io/ioutil"
     )
     
 func move (inputname, outputname string) {
@@ -85,3 +88,41 @@ func copyfile(source string, dest string) (err error) {
 
      return
  }
+ 
+func substitute (file, tie, replacetext string) {
+        input, err := ioutil.ReadFile(file)
+        if err != nil {
+                log.Fatalln(err)
+        }
+
+        lines := strings.Split(string(input), "\n")
+
+        for line := range lines {
+                lines[line] = strings.Replace(lines[line], tie, replacetext, -1)
+        }
+        
+        output := strings.Join(lines, "\n")
+        err = ioutil.WriteFile(file, []byte(output), 0644)
+        if err != nil {
+                log.Fatalln(err)
+        } 
+}
+
+func substitute_in_header (file, tie, replacetext string) {
+        input, err := ioutil.ReadFile(file)
+        if err != nil {
+                log.Fatalln(err)
+        }
+
+        lines := strings.Split(string(input), "\n")
+
+        for line := 0; line < 6; line++ {
+                lines[line] = strings.Replace(lines[line], tie, replacetext, -1)
+        }
+        
+        output := strings.Join(lines, "\n")
+        err = ioutil.WriteFile(file, []byte(output), 0644)
+        if err != nil {
+                log.Fatalln(err)
+        } 
+}
