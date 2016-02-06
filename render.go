@@ -20,7 +20,6 @@ import (
         "os"
         "path/filepath"
         "fmt"
-        "github.com/go-ini/ini"
         "github.com/nfnt/resize"
         "image/jpeg"
         "strconv"
@@ -29,17 +28,14 @@ import (
 
 func render_site() {
 
-        type Site struct {
-		site_title, pagedir, gallerydir, templatedir string
+    type Site struct {
+		pagedir, gallerydir, templatedir string
 	}
 	
-	cfg, _ := ini.Load("config.ini")
-	        
         site := Site{    
-    	        site_title : cfg.Section("general").Key("title").String(),
-                pagedir : cfg.Section("general").Key("pagedir").String(),
-                gallerydir : cfg.Section("general").Key("gallerydir").String(),
-                templatedir : cfg.Section("general").Key("templatedir").String(),
+                pagedir : "pages",
+                gallerydir : "pages/gallery",
+                templatedir : "templates",
         }
 
         fmt.Println("Rendering!")
@@ -147,7 +143,6 @@ func render_pages( pagedir, gallerydir, templatedir, site_title string) {
         
         i = 0
         for i < len(all_pages) {
-                substitute(all_pages[i], "<<~~TITLE~~>>",site_title)
                 inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
 
                 j := 0
