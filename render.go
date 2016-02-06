@@ -41,7 +41,7 @@ func render_site() {
         fmt.Println("Rendering!")
         create_folder_structure (site.pagedir, site.gallerydir)
         copy_src ()
-        render_pages(site.pagedir, site.gallerydir, site.templatedir, site.site_title)
+        render_pages(site.pagedir, site.gallerydir, site.templatedir)
         
         
         /* Removing the temporary files */
@@ -68,7 +68,7 @@ func copy_src () {
         }
 }
 
-func render_pages( pagedir, gallerydir, templatedir, site_title string) {
+func render_pages( pagedir, gallerydir, templatedir string) {
 
         /* move the pages to temp */
         
