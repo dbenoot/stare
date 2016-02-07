@@ -81,7 +81,9 @@ func render_pages( pagedir, gallerydir, templatedir string) {
         all_pages := []string{}
         draft_pages := []string{}
         menu_item := []string{}
+        //menu_names := []string{}
         menu := make(map[int64]string)
+        menuname := make(map[int64]string)
 
         // checking whether the page is posted
         // checking whether the page should be present in the menu        
@@ -106,6 +108,11 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                                                 menu_order, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
                                                 menu_item = append(menu_item, strings.Split(item[i], "/")[2])
                                                 menu[menu_order] = item[i]
+                                        }
+                                        if strings.Contains(lines[k], "menu name       : ") == true {
+                                                menu_order, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
+                                                //menu_names = append(menu_names, strings.Split(lines[k], ": ")[1])
+                                                menuname[menu_order] = strings.Split(lines[k], ": ")[1]
                                         }
                                         k += 1
                                 }
@@ -146,10 +153,11 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 j := 0
                 //for j < len(menu_item) {
                 for j < 10 {
-                        if _, ok := menu[int64(j)]; ok {        
-                                var orig_link string = menu[int64(j)]
+                        if orig_link, ok := menu[int64(j)]; ok {        
+                                //var orig_link string = menu[int64(j)]
+                                var page_name string = menuname[int64(j)]
                                 page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
-                                page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
+                                //page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
                                 inject_nav_items(all_pages[i], "<<~~NAVLIST~~>>", templatedir+"/navbar_item.html")
                                 if page_link == strings.Split(all_pages[i],"/")[2] {
                                         substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "class=\"active\"")
