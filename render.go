@@ -117,9 +117,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 }
         i += 1
         }
-        
-        fmt.Println(menu)
-        
+
         fmt.Println("The following pages will be rendered: ")
         b:= 0
         for b < len (all_pages) {
@@ -146,31 +144,34 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
 
                 j := 0
-                for j < len(menu_item) {
-                        var orig_link string = menu[int64(j)]
-                        page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
-                        page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
-                        inject_nav_items(all_pages[i], "<<~~NAVLIST~~>>", templatedir+"/navbar_item.html")
-                        if page_link == strings.Split(all_pages[i],"/")[2] {
-                                substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "class=\"active\"")
-                        } else {
-                                substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "")
-                        }
-                        
-                        if strings.Split(all_pages[i],"/")[2] == "index.html" {
-                                if page_link == "index.html" {
-                                        substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
+                //for j < len(menu_item) {
+                for j < 10 {
+                        if _, ok := menu[int64(j)]; ok {        
+                                var orig_link string = menu[int64(j)]
+                                page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
+                                page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
+                                inject_nav_items(all_pages[i], "<<~~NAVLIST~~>>", templatedir+"/navbar_item.html")
+                                if page_link == strings.Split(all_pages[i],"/")[2] {
+                                        substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "class=\"active\"")
                                 } else {
-                                        substitute(all_pages[i], "<<~~NAVLINK~~>>",pagedir+"/"+page_link)
+                                        substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "")
                                 }
-                        } else {
-                                if page_link == "index.html" {
-                                        substitute(all_pages[i], "<<~~NAVLINK~~>>","../"+page_link)
+                                
+                                if strings.Split(all_pages[i],"/")[2] == "index.html" {
+                                        if page_link == "index.html" {
+                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
+                                        } else {
+                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",pagedir+"/"+page_link)
+                                        }
                                 } else {
-                                        substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
+                                        if page_link == "index.html" {
+                                                substitute(all_pages[i], "<<~~NAVLINK~~>>","../"+page_link)
+                                        } else {
+                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
+                                        }
                                 }
+                                substitute(all_pages[i], "<<~~NAVITEM~~>>",page_name)
                         }
-                        substitute(all_pages[i], "<<~~NAVITEM~~>>",page_name)
                         j += 1
                 }
 
@@ -279,7 +280,6 @@ func render_pages( pagedir, gallerydir, templatedir string) {
 
                 //
                 
-                substitute(all_galleries[i], "<<~~TITLE~~>>",site_title)
                 substitute(all_galleries[i], "<<~~GALLERYTITLE~~>>",all_galleries_name[i])
                 
                 /* inject navbar */
