@@ -40,46 +40,50 @@ import (
         "time"
 )
 
-func render_site() {
-
-    type Site struct {
-		pagedir, gallerydir, templatedir string
-	}
-	
-        site := Site{    
-                pagedir : "pages",
-                gallerydir : "pages/gallery",
-                templatedir : "templates",
-        }
-
-        fmt.Println("Rendering!")
-        create_folder_structure (site.pagedir, site.gallerydir)
-        copy_src ()
-        render_pages(site.pagedir, site.gallerydir, site.templatedir)
-        
-        
-        /* Removing the temporary files */
-        
-        /*os.Remove("temp")*/
+var site = Site{    
+        pagedir : "pages",
+        srcdir : "src",
+        gallerydir : "pages/gallery",
+        templatedir : "templates",
 }
 
-func create_folder_structure (page, gallery string) {
-        /* prepare folder structure */
-	
-        /*os.Remove("rendered")*/
-        os.MkdirAll("temp/"+page, 0755)
-        os.MkdirAll("temp/"+gallery, 0755)
-        os.MkdirAll("rendered/"+page, 0755)
-        os.MkdirAll("rendered/"+gallery, 0755)
+type Site struct {
+        pagedir, gallerydir, templatedir string
 }
 
-func copy_src () {
-        src_items, _ := filepath.Glob("src/*")
+func (site Site) createFolder () {
+        
+        // Remove previous rendering of the site
+        
+        os.Remove("rendered")
+        
+        // Create directories for temporary files and newly rendered site
+        
+        os.MkdirAll("temp/"+site.pagedir, 0755)
+        os.MkdirAll("temp/"+site.gallerydir, 0755)
+        os.MkdirAll("rendered/"+site.pagedir, 0755)
+        os.MkdirAll("rendered/"+site.gallerydir, 0755)
+}
+
+func (site Site) copySrc () {
+        src_items, _ := filepath.Glob(srcdir)
         i := 0
         for i < len(src_items) {
                 copydir(src_items[i], "rendered/"+strings.Split(src_items[i], "/")[1])
                 i += 1
         }
+}
+
+func render_site() {
+
+        fmt.Println("Rendering!")
+        site.createFolder()
+        site.copySrc ()
+        render_pages(site.pagedir, site.gallerydir, site.templatedir)
+        
+        // Remove the temporary files 
+        
+        os.Remove("temp")
 }
 
 func render_pages( pagedir, gallerydir, templatedir string) {
