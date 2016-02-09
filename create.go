@@ -33,9 +33,9 @@ import (
     "os"
     "path/filepath"
     "time"
-    //"io/ioutil"
+    "bufio"
     //"log"
-    //"strings"
+    "strings"
 )
 
 func create_page(pagename string) {
@@ -61,10 +61,10 @@ func create_page(pagename string) {
                     }
                 var menuname string
                     fmt.Println("Name of page in the menubar")
-                    if _, err := fmt.Scanf("%s", &menuname); err != nil {
-                        fmt.Printf("%s\n", err)
-                    return
-                    }
+                    reader := bufio.NewReader(os.Stdin)
+                    menuname, _ = reader.ReadString('\n')
+                    menuname = strings.TrimSpace(menuname)
+ 
             prepend("menu name       : "+menuname, "pages/"+pagename+".html")
             prepend("menu order      : "+menuorder, "pages/"+pagename+".html")
             prepend("present in menu : y", "pages/"+pagename+".html")
