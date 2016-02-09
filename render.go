@@ -38,6 +38,7 @@ import (
         "image/jpeg"
         "strconv"
         "time"
+        "path"
 )
 
 var site = Site{    
@@ -46,6 +47,7 @@ var site = Site{
         gallerydir : "pages/gallery",
         templatedir : "templates",
 }
+var wd, _ = os.Getwd()
 
 type Site struct {
         pagedir, srcdir, gallerydir, templatedir string
@@ -54,8 +56,8 @@ type Site struct {
 func (site Site) createFolder () {
         
         // Remove previous rendering of the site
-        
-        os.Remove("rendered")
+
+        os.RemoveAll(path.Join(wd, "rendered"))
         
         // Create directories for temporary files and newly rendered site
         
@@ -75,21 +77,23 @@ func (site Site) copySrc () {
 }
 
 func (site Site) renderPages() {
-
+        
+        // declare variables
+        
         item, _ := filepath.Glob("temp/"+site.pagedir+"/*.html")
         all_pages := []string{}
         draft_pages := []string{}
         menu_item := []string{}
-        //menu_names := []string{}
         menu := make(map[int64]string)
         menuname := make(map[int64]string)
-
+        all_galleries := []string{}
+        all_galleries_name := []string{}
+        
         // move the pages to the temporary directory
         
         copydir(site.pagedir, "temp/"+site.pagedir)
         copydir(site.gallerydir, "temp/"+site.gallerydir)
         
-        // create navlist
         // check whether the page is posted
         // check whether the page should be present in the menu        
         
@@ -116,7 +120,6 @@ func (site Site) renderPages() {
                                         }
                                         if strings.Contains(lines[k], "menu name       : ") == true {
                                                 menu_order, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
-                                                //menu_names = append(menu_names, strings.Split(lines[k], ": ")[1])
                                                 menuname[menu_order] = strings.Split(lines[k], ": ")[1]
                                         }
                                         k += 1
@@ -224,8 +227,8 @@ func (site Site) renderPages() {
 
         /* create gallery.html content and sub-gallery htmls */
         
-        if _, err := os.Stat("pages/gallery.html"); os.IsNotExist(err) {
-        copyfile(site.templatedir+"/gallery_template.html", "pages/gallery.html")
+        if _, err := os.Stat(site.pagedir+"/gallery.html"); os.IsNotExist(err) {
+        copyfile(site.templatedir+"/gallery_template.html", site.pagedir+"/gallery.html")
         
         now := time.Now().Format(time.RFC1123)
         prepend("status          : posted\n------------------------------------------------------------------------", "pages/gallery.html")    
@@ -237,8 +240,7 @@ func (site Site) renderPages() {
         
         dirs, _ := ioutil.ReadDir ("temp/"+site.gallerydir+"/")
         
-        all_galleries := []string{}
-        all_galleries_name := []string{}
+
         
         i = 0
         for i < len(dirs) {
@@ -281,7 +283,7 @@ func (site Site) renderPages() {
                         substitute("temp/pages/gallery.html","<<~~SUBGALLERYTHUMB~~>>",strings.Split(strings.Split(images[a],"temp/pages/")[1],".")[0]+"_thumb.jpg")
                         substitute("temp/pages/gallery.html","<<~~SUBGALLERYNAME~~>>",all_galleries_name[i])
                         
-                        inject_html(all_galleries[i], "<<~~SUBGALLERYITEM~~>>", "templates/subgallery_item.html")
+                        inject_html(all_galleries[i], "<<~~SUBGALLERYITEM~~>>", site.templatedir+"/subgallery_item.html")
                         substitute(all_galleries[i],"<<~~SUBIMAGE~~>>", strings.Split(images[a],"temp/pages/gallery/")[1])
                         substitute(all_galleries[i],"<<~~SUBIMAGETHUMB~~>>", strings.Split(strings.Split(images[a],"temp/pages/gallery/")[1],".")[0]+"_thumb.jpg")
 
@@ -348,7 +350,7 @@ func render_site() {
         
         // Remove the temporary files 
         
-        os.Remove("temp")
+        os.RemoveAll(path.Join(wd, "temp"))
 }
 
 func resize_picture (filename, output_folder string) {
