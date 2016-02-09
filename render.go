@@ -48,7 +48,7 @@ var site = Site{
 }
 
 type Site struct {
-        pagedir, gallerydir, templatedir string
+        pagedir, srcdir, gallerydir, templatedir string
 }
 
 func (site Site) createFolder () {
@@ -66,36 +66,17 @@ func (site Site) createFolder () {
 }
 
 func (site Site) copySrc () {
-        src_items, _ := filepath.Glob(srcdir)
+        srcItems, _ := filepath.Glob(site.srcdir+"/*")
         i := 0
-        for i < len(src_items) {
-                copydir(src_items[i], "rendered/"+strings.Split(src_items[i], "/")[1])
+        for i < len(srcItems) {
+                copydir(srcItems[i], "rendered/"+strings.Split(srcItems[i], "/")[1])
                 i += 1
         }
 }
 
-func render_site() {
+func (site Site) renderPages() {
 
-        fmt.Println("Rendering!")
-        site.createFolder()
-        site.copySrc ()
-        render_pages(site.pagedir, site.gallerydir, site.templatedir)
-        
-        // Remove the temporary files 
-        
-        os.Remove("temp")
-}
-
-func render_pages( pagedir, gallerydir, templatedir string) {
-
-        /* move the pages to temp */
-        
-        copydir(pagedir, "temp/"+pagedir)
-        copydir(gallerydir, "temp/"+gallerydir)
-        
-        /* create navlist */
-        
-        item, _ := filepath.Glob("temp/"+pagedir+"/*.html")
+        item, _ := filepath.Glob("temp/"+site.pagedir+"/*.html")
         all_pages := []string{}
         draft_pages := []string{}
         menu_item := []string{}
@@ -103,8 +84,14 @@ func render_pages( pagedir, gallerydir, templatedir string) {
         menu := make(map[int64]string)
         menuname := make(map[int64]string)
 
-        // checking whether the page is posted
-        // checking whether the page should be present in the menu        
+        // move the pages to the temporary directory
+        
+        copydir(site.pagedir, "temp/"+site.pagedir)
+        copydir(site.gallerydir, "temp/"+site.gallerydir)
+        
+        // create navlist
+        // check whether the page is posted
+        // check whether the page should be present in the menu        
         
         i := 0
         for i < len(item) {
@@ -149,16 +136,19 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 fmt.Println(all_pages[b])
                 b += 1
                 }
-        fmt.Println("The following pages are still in draft: ")
-        b = 0
-        for b < len (draft_pages) {
-                fmt.Println(draft_pages[b])
-                b += 1
+        
+        if len(draft_pages) != 0 {
+                fmt.Println("The following pages are still in draft and will not be rendered: ")
+                b = 0
+                for b < len (draft_pages) {
+                        fmt.Println(draft_pages[b])
+                        b += 1
                 }
+        }
 
         // copy the navbar template to the temp folder 
 
-        copyfile(templatedir+"/navbar_template.html", "temp/navbar.html")        
+        copyfile(site.templatedir+"/navbar_template.html", "temp/navbar.html")        
 
         // add navbar to the pages and resolve the ties NAVACTIVE, NAVLINK, NAVITEM
         // Cycling through all posted pages, then cycling through all menu items
@@ -176,7 +166,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                                 var page_name string = menuname[int64(j)]
                                 page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
                                 //page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
-                                inject_nav_items(all_pages[i], "<<~~NAVLIST~~>>", templatedir+"/navbar_item.html")
+                                inject_nav_items(all_pages[i], "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
                                 if page_link == strings.Split(all_pages[i],"/")[2] {
                                         substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "class=\"active\"")
                                 } else {
@@ -187,7 +177,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                                         if page_link == "index.html" {
                                                 substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
                                         } else {
-                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",pagedir+"/"+page_link)
+                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",site.pagedir+"/"+page_link)
                                         }
                                 } else {
                                         if page_link == "index.html" {
@@ -205,7 +195,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 
                 /* populate the footer tie */
                 
-                inject_html(all_pages[i], "<<~~FOOTER~~>>", templatedir+"/footer_template.html")
+                inject_html(all_pages[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html")
                 
                 /* resolve ties CSS, JS, PAGE */
                 
@@ -226,7 +216,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 if strings.Split(all_pages[i],"/")[2] == "index.html" {
                         copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[2])
                 } else {
-                        copyfile(all_pages[i], "rendered/"+pagedir+"/"+strings.Split(all_pages[i],"/")[2])
+                        copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
                 }
                 i += 1
                 
@@ -235,7 +225,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
         /* create gallery.html content and sub-gallery htmls */
         
         if _, err := os.Stat("pages/gallery.html"); os.IsNotExist(err) {
-        copyfile(templatedir+"/gallery_template.html", "pages/gallery.html")
+        copyfile(site.templatedir+"/gallery_template.html", "pages/gallery.html")
         
         now := time.Now().Format(time.RFC1123)
         prepend("status          : posted\n------------------------------------------------------------------------", "pages/gallery.html")    
@@ -245,7 +235,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
         prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/gallery.html")
     }
         
-        dirs, _ := ioutil.ReadDir ("temp/"+gallerydir+"/")
+        dirs, _ := ioutil.ReadDir ("temp/"+site.gallerydir+"/")
         
         all_galleries := []string{}
         all_galleries_name := []string{}
@@ -253,7 +243,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
         i = 0
         for i < len(dirs) {
                 if dirs[i].IsDir() == true {
-                        copyfile("." + string(filepath.Separator) + templatedir + string(filepath.Separator) + "subgallery_template.html", "." + string(filepath.Separator) + "temp" + string(filepath.Separator) + "pages" + string(filepath.Separator) + "gallery" + string(filepath.Separator) + dirs[i].Name() + ".html")
+                        copyfile("." + string(filepath.Separator) + site.templatedir + string(filepath.Separator) + "subgallery_template.html", "." + string(filepath.Separator) + "temp" + string(filepath.Separator) + "pages" + string(filepath.Separator) + "gallery" + string(filepath.Separator) + dirs[i].Name() + ".html")
                         all_galleries = append(all_galleries, "temp/pages/gallery/"+dirs[i].Name()+".html")
                         all_galleries_name = append(all_galleries_name, dirs[i].Name())
                 }
@@ -263,7 +253,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
         i = 0
         for i < len(all_galleries) {
 
-                inject_html("temp/"+pagedir+"/gallery.html", "<<~~GALLERYITEM~~>>", "templates/gallery_item.html")
+                inject_html("temp/"+site.pagedir+"/gallery.html", "<<~~GALLERYITEM~~>>", "templates/gallery_item.html")
                 
                 // Loop over all images and do the following updates
                 //
@@ -279,8 +269,8 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 // SUBIMAGE      = galleryname/imagename
                 // SUBIMAGETHUMB = galleryname/imagename_thumb
                 
-                imagepath := "temp/"+gallerydir+"/"+all_galleries_name[i]+"/"
-                renderpath := "rendered/"+gallerydir+"/"+all_galleries_name[i]+"/"
+                imagepath := "temp/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
+                renderpath := "rendered/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
                 
                 copydir(imagepath, renderpath)
                 
@@ -318,7 +308,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                         var orig_link string = menu[int64(j)]
                         page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
                         page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
-                        inject_nav_items(all_galleries[i], "<<~~NAVLIST~~>>", templatedir+"/navbar_item.html")
+                        inject_nav_items(all_galleries[i], "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
                         substitute(all_galleries[i],"<<~~NAVACTIVE~~>>", "")
                         if page_link == "index.html" {
                                 substitute(all_galleries[i], "<<~~NAVLINK~~>>","../../"+page_link)
@@ -331,7 +321,7 @@ func render_pages( pagedir, gallerydir, templatedir string) {
 
                 /* populate the footer tie */
                 
-                inject_html(all_galleries[i], "<<~~FOOTER~~>>", templatedir+"/footer_template.html")                
+                inject_html(all_galleries[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html")                
                 
                 /* resolve ties CSS, JS, PAGE */
                 
@@ -340,13 +330,25 @@ func render_pages( pagedir, gallerydir, templatedir string) {
                 substitute(all_galleries[i], "<<~~PAGE~~>>","../")
                 
                 //remove_header(all_galleries[i])
-                copyfile(all_galleries[i], "rendered/"+gallerydir+"/"+strings.Split(all_galleries[i],"/")[3])
-                copydir("temp/"+gallerydir+"/"+all_galleries_name[i], "rendered/pages/gallery/"+all_galleries_name[i])
+                copyfile(all_galleries[i], "rendered/"+site.gallerydir+"/"+strings.Split(all_galleries[i],"/")[3])
+                copydir("temp/"+site.gallerydir+"/"+all_galleries_name[i], "rendered/pages/gallery/"+all_galleries_name[i])
                 i += 1
                 
         }
-        substitute("temp/"+pagedir+"/gallery.html","<<~~GALLERYITEM~~>>","")
-        copyfile("temp/"+pagedir+"/gallery.html", "rendered/pages/gallery.html")
+        substitute("temp/"+site.pagedir+"/gallery.html","<<~~GALLERYITEM~~>>","")
+        copyfile("temp/"+site.pagedir+"/gallery.html", "rendered/pages/gallery.html")
+}
+
+func render_site() {
+
+        fmt.Println("Rendering!")
+        site.createFolder()
+        site.copySrc ()
+        site.renderPages()
+        
+        // Remove the temporary files 
+        
+        os.Remove("temp")
 }
 
 func resize_picture (filename, output_folder string) {
