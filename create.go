@@ -21,9 +21,6 @@
 //    - order in the menu
 //    - name in menu
 //    - draft
-//- add metadata to new gallery
-//    - date and time of creation
-//    - draft
 //- create gallery folder
 
 package main

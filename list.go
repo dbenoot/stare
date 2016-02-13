@@ -29,7 +29,7 @@ func sourcelist() {
     list("pages/*.html")
     
     fmt.Println("\nGALLERIES")
-    listdir("gallery")
+    listdir("pages/gallery")
     
     return
     }

@@ -12,18 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-/* TODO
-
-- delete the current rendered folder
-- resize pictures and create thumbnails (x_thumb.jpg)
-- create gallery.html and the separate gallery pages, based on templates (gallery_template.html and subgallery_template.html)
-- move all galleries from dist/gallery to dist/rendered/gallery
-- move all pages from dist/pages to dist/rendered/pages, move index.html to dist/rendered, create gallery.html in dist/pages
-- move all css/js/... from dist/src to dist/rendered/
-- replace all placeholders with correct html (<<~~INDEX~~>>, <<~~PAGES~~>>, <<~~TITLE~~>>, <<~~NAVBAR~~>>, <<~~NAVLIST~~>>, <<~~FOOTER~~>>, <<~~JS~~>>, <<~~CSS~~>>, <<~~FONTS~~>>)
-- order should be -> NAVBAR and FOOTER, then all the rest, as the NAVBAR and FOOTER can also contain <<~~X~~>> links
-
-*/
+// Render all production pages and galleries
 
 package main
 
@@ -80,7 +69,6 @@ func (site Site) renderPages() {
         
         // declare variables
         
-        item, _ := filepath.Glob("temp/"+site.pagedir+"/*.html")
         all_pages := []string{}
         draft_pages := []string{}
         menu_item := []string{}
@@ -93,6 +81,10 @@ func (site Site) renderPages() {
         
         copydir(site.pagedir, "temp/"+site.pagedir)
         copydir(site.gallerydir, "temp/"+site.gallerydir)
+        
+        // declare item
+        
+        item, _ := filepath.Glob("temp/"+site.pagedir+"/*.html")
         
         // check whether the page is posted
         // check whether the page should be present in the menu        
@@ -196,8 +188,9 @@ func (site Site) renderPages() {
 
                 substitute(all_pages[i], "<<~~NAVLIST~~>>","")
                 
-                /* populate the footer tie */
+                /* populate the header and footer tie */
                 
+                inject_html(all_pages[i], "<<~~HEADER~~>>", site.templatedir+"/header_template.html")
                 inject_html(all_pages[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html")
                 
                 /* resolve ties CSS, JS, PAGE */
@@ -300,8 +293,9 @@ func (site Site) renderPages() {
                 
                 substitute(all_galleries[i], "<<~~GALLERYTITLE~~>>",all_galleries_name[i])
                 
-                /* inject navbar */
+                /* inject header and navbar */
                 
+                inject_html(all_galleries[i], "<<~~HEADER~~>>", site.templatedir+"/header_template.html")
                 inject_html(all_galleries[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
                 
                 /* populate navbar with the correct links */

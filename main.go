@@ -12,13 +12,17 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+// TODO
+//
+// add blog page
+// add responsive image breakpoints
+
 package main
 
 import (
     "fmt"
     "flag"
     "os"
-    //"github.com/go-ini/ini"
 )
 
 func main() {
