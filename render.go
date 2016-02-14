@@ -153,40 +153,9 @@ func (site Site) renderPages() {
         for i < len(all_pages) {
                 inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
 
-                j := 0
-                //for j < len(menu_item) {
-                for j < 10 {
-                        if orig_link, ok := menu[int64(j)]; ok {        
-                                //var orig_link string = menu[int64(j)]
-                                var page_name string = menuname[int64(j)]
-                                page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
-                                //page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
-                                inject_nav_items(all_pages[i], "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
-                                if page_link == strings.Split(all_pages[i],"/")[2] {
-                                        substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "class=\"active\"")
-                                } else {
-                                        substitute(all_pages[i],"<<~~NAVACTIVE~~>>", "")
-                                }
-                                
-                                if strings.Split(all_pages[i],"/")[2] == "index.html" {
-                                        if page_link == "index.html" {
-                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
-                                        } else {
-                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",site.pagedir+"/"+page_link)
-                                        }
-                                } else {
-                                        if page_link == "index.html" {
-                                                substitute(all_pages[i], "<<~~NAVLINK~~>>","../"+page_link)
-                                        } else {
-                                                substitute(all_pages[i], "<<~~NAVLINK~~>>",page_link)
-                                        }
-                                }
-                                substitute(all_pages[i], "<<~~NAVITEM~~>>",page_name)
-                        }
-                        j += 1
-                }
+                create_navbar(all_pages[i], menu, menuname, false)
 
-                substitute(all_pages[i], "<<~~NAVLIST~~>>","")
+                
                 
                 /* populate the header and footer tie */
                 
@@ -299,21 +268,23 @@ func (site Site) renderPages() {
                 inject_html(all_galleries[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
                 
                 /* populate navbar with the correct links */
+
+                create_navbar(all_galleries[i], menu, menuname, true)
                 
-                for j := 0; j < len(menu_item); j++ {
-                        var orig_link string = menu[int64(j)]
-                        page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
-                        page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
-                        inject_nav_items(all_galleries[i], "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
-                        substitute(all_galleries[i],"<<~~NAVACTIVE~~>>", "")
-                        if page_link == "index.html" {
-                                substitute(all_galleries[i], "<<~~NAVLINK~~>>","../../"+page_link)
-                        } else {
-                                substitute(all_galleries[i], "<<~~NAVLINK~~>>","../"+page_link)
-                        }
-                        substitute(all_galleries[i], "<<~~NAVITEM~~>>",page_name)
-                }
-                substitute(all_galleries[i], "<<~~NAVLIST~~>>","")
+                // for j := 0; j < len(menu_item); j++ {
+                //         var orig_link string = menu[int64(j)]
+                //         page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
+                //         page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
+                //         inject_nav_items(all_galleries[i], "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
+                //         substitute(all_galleries[i],"<<~~NAVACTIVE~~>>", "")
+                //         if page_link == "index.html" {
+                //                 substitute(all_galleries[i], "<<~~NAVLINK~~>>","../../"+page_link)
+                //         } else {
+                //                 substitute(all_galleries[i], "<<~~NAVLINK~~>>","../"+page_link)
+                //         }
+                //         substitute(all_galleries[i], "<<~~NAVITEM~~>>",page_name)
+                // }
+                // substitute(all_galleries[i], "<<~~NAVLIST~~>>","")
 
                 /* populate the footer tie */
                 
@@ -438,6 +409,45 @@ func inject_html (file, tie, html_source_file string) {
         if err != nil {
                 log.Fatalln(err)
         } 
+}
+
+func create_navbar (page string, menu map[int64]string, menuname map[int64]string, galleryYN bool) {
+        j := 0
+                for j < 10 {
+                        if orig_link, ok := menu[int64(j)]; ok {        
+                                var page_name string = menuname[int64(j)]
+                                page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
+                                inject_nav_items(page, "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
+                                if page_link == strings.Split(page,"/")[2] {
+                                        substitute(page,"<<~~NAVACTIVE~~>>", "class=\"active\"")
+                                } else {
+                                        substitute(page,"<<~~NAVACTIVE~~>>", "")
+                                }
+                                
+                                if galleryYN == true {
+                                        if page_link == "index.html" {
+                                                substitute(page, "<<~~NAVLINK~~>>","../../"+page_link)
+                                        } else {
+                                                substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
+                                        }
+                                } else if strings.Split(page,"/")[2] == "index.html" {
+                                        if page_link == "index.html" {
+                                                substitute(page, "<<~~NAVLINK~~>>",page_link)
+                                        } else {
+                                                substitute(page, "<<~~NAVLINK~~>>",site.pagedir+"/"+page_link)
+                                        }
+                                } else {
+                                        if page_link == "index.html" {
+                                                substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
+                                        } else {
+                                                substitute(page, "<<~~NAVLINK~~>>",page_link)
+                                        }
+                                }
+                                substitute(page, "<<~~NAVITEM~~>>",page_name)
+                        }
+                        j += 1
+                }
+        substitute(page, "<<~~NAVLIST~~>>","")        
 }
 
 func inject_nav_items (file, tie, html_source_file string) {
