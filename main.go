@@ -27,15 +27,15 @@ import (
 
 func main() {
 
-    renderCommand := flag.NewFlagSet("render", flag.ExitOnError)
-
 	createCommand := flag.NewFlagSet("create", flag.ExitOnError)
 	pageCreateFlag := createCommand.String("page", "", "Name of the new page.")
 	galleryCreateFlag := createCommand.String("gallery", "", "Name of the new gallery.")
+	blogCreateFlag := createCommand.String("blog", "", "Name of the new gallery.")
 
 	archiveCommand := flag.NewFlagSet("archive", flag.ExitOnError)
 	pageArchiveFlag := archiveCommand.String("page", "", "Name of the page to be archived.")
 	gallerypageArchiveFlag := archiveCommand.String("gallery", "", "Name of the gallery to be archived.")
+	blogArchiveFlag := archiveCommand.String("blog", "", "Name of the blog post to be archived.")
 
 	postCommand := flag.NewFlagSet("post", flag.ExitOnError)
 	pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
@@ -43,8 +43,6 @@ func main() {
 	unpostCommand := flag.NewFlagSet("unpost", flag.ExitOnError)
 	pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
 
-    listCommand := flag.NewFlagSet("list", flag.ExitOnError)
-	
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
 		fmt.Println("The most commonly used stare commands are: \n")
@@ -53,6 +51,7 @@ func main() {
 		fmt.Println(" create")
 		fmt.Println("   -page     Creates a new page")
 		fmt.Println("   -gallery  Create a new gallery\n")
+		fmt.Println("   -blog     Create a new blog post\n")
 		fmt.Println(" post")
 		fmt.Println("   -page     Posts a page\n")
 		fmt.Println(" unpost")
@@ -65,13 +64,15 @@ func main() {
 
 	switch os.Args[1] {
 	case "render":
-		renderCommand.Parse(os.Args[2:])
+		// renderCommand.Parse(os.Args[2:])
+		render_site()
 	case "create":
 		createCommand.Parse(os.Args[2:])
 	case "archive":
 		archiveCommand.Parse(os.Args[2:])
 	case "list":
-	    listCommand.Parse(os.Args[2:])
+	    // listCommand.Parse(os.Args[2:])
+	    sourcelist()
 	case "post":
 		postCommand.Parse(os.Args[2:])
 	case "unpost":
@@ -81,53 +82,28 @@ func main() {
 		os.Exit(2)
 	}
 
-	if renderCommand.Parsed() {
-		render_site()
-	}
-
-	if listCommand.Parsed() {
-		sourcelist()
-	}
-
 	if createCommand.Parsed() {
-		if *pageCreateFlag == "" && *galleryCreateFlag == "" {
-			fmt.Println("Please provide the page name using -page option or the gallery name using -gallery.")
-			return
-		}
-        if *pageCreateFlag != "" && *galleryCreateFlag == ""  {
-            create_page(*pageCreateFlag)
-            return
-        }
-        if *pageCreateFlag == "" && *galleryCreateFlag != "" {
-            create_gallery(*galleryCreateFlag)
-            return
-        }
-        if *pageCreateFlag != "" && *galleryCreateFlag != "" {
-            create_page(*pageCreateFlag)
-            create_gallery(*galleryCreateFlag)
-            return
-        } 
-	}
+		if *pageCreateFlag == "" && *galleryCreateFlag == "" && *blogCreateFlag == "" {
+			fmt.Println("Please provide the page, gallery or blog name using -page, -gallery or -blog parameter.")
+		} else if *pageCreateFlag != "" {
+        	create_page(*pageCreateFlag)
+        	fmt.Println(*pageCreateFlag)
+		} else if *galleryCreateFlag != "" {
+        	create_gallery(*galleryCreateFlag)
+		} else if *blogCreateFlag != "" {
+        	create_blog(*blogCreateFlag)
+        }	
+    }
 
 	if archiveCommand.Parsed() {
-		if *pageArchiveFlag == "" && *gallerypageArchiveFlag == "" {
+		if *pageArchiveFlag == "" && *gallerypageArchiveFlag == "" && *blogArchiveFlag == ""{
 			fmt.Println("Please provide the page name using -page option or the gallery name using -gallery.")
-			return
-		}
-
-        if *pageArchiveFlag != "" && *gallerypageArchiveFlag == "" {
+		} else if *pageArchiveFlag != "" {
             archive_page(*pageArchiveFlag)
-            return
-        }
-        
-       if *pageArchiveFlag == "" && *gallerypageArchiveFlag != "" {
+        } else if *gallerypageArchiveFlag != "" {
             archive_gallery(*gallerypageArchiveFlag)
-            return
-        }
-        if *pageArchiveFlag != "" && *gallerypageArchiveFlag != "" {
-            archive_page(*pageArchiveFlag)
-            archive_gallery(*gallerypageArchiveFlag)
-            return
+        } else if *blogArchiveFlag != "" {
+            archive_blog(*blogArchiveFlag)
         }
 	}
 	

@@ -35,12 +35,14 @@ import (
     "strings"
 )
 
+var now = time.Now().Format(time.RFC1123)
+
 func create_page(pagename string) {
 
     fmt.Println("Creating page " + pagename)
     copyfile("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + pagename + ".html")
 
-    now := time.Now().Format(time.RFC1123)
+    
     prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+pagename+".html")
     
     var menuyn string
@@ -70,6 +72,22 @@ func create_page(pagename string) {
         }
 
     prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/"+pagename+".html")
+}
+
+func create_blog (blogName string) {
+    fmt.Println("Creating blog " + blogName)
+    if _, err := os.Stat("pages/blogs/"); os.IsNotExist(err) {
+        os.MkdirAll("pages/blogs/", 0755)
+    }
+    
+    filename := blogName+" - "+now+".md"
+    
+    os.Create("pages/blogs/"+filename)
+    
+    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/blogs/"+filename)
+    prepend("taxonomies      : ", "pages/blogs/"+filename)
+    prepend("created by      :", "pages/blogs/"+filename)
+    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/blogs/"+filename)
 }
 
 func create_gallery(galleryname string) {

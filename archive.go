@@ -22,6 +22,8 @@ import (
     "fmt"
     "os"
     "path/filepath"
+    "strconv"
+    "strings"
 )
 
 func archive_page(pagename string) {
@@ -34,6 +36,50 @@ func archive_page(pagename string) {
     }
     
     move("pages" + string(filepath.Separator) + pagename+".html", path + pagename + ".html")
+}
+
+func archive_blog(blogname string) {
+    
+    var blogId int
+    
+    // Check whether the path exists and create if necessary
+    
+    path := "archive/pages/blogs/"
+    _, err := os.Stat(path) 
+    if err != nil {
+        os.MkdirAll(path, 0755)
+    }
+    
+    // Read all blog posts which contain the entered string
+    
+    blogposts, _ := filepath.Glob("pages/blogs/"+blogname+"*")
+
+    // Select the correct blog post by assigning the correct blogId
+    // If only 1 post is applicable, set the blogId
+    // If more than 1 post is applicable, ask which post is applicable and set the blogId
+
+    if len(blogposts) == 1 {
+        blogId = 0
+    } else {
+    
+        for i := 0; i < len(blogposts); i++ {
+            fmt.Println(strconv.Itoa(i) + " - "+blogposts[i])
+        }
+        fmt.Println("Which blog post should be archived?")
+        if _, err := fmt.Scanf("%d", &blogId); err != nil {
+            fmt.Printf("%s\n", err)
+        }
+    }
+    
+    // Check that the blogId can exist and archive the correct blogId
+    
+    if blogId >= len(blogposts) {
+        fmt.Println("Blog post does not exist.")
+    } else {
+        filename := strings.Split(blogposts[blogId],"/")[len(strings.Split(blogposts[blogId],"/"))-1]
+        fmt.Println("Archiving blog post ", filename)
+        move(blogposts[blogId], "archive/pages/blogs/"+filename)
+    }
 }
 
 func archive_gallery(galleryname string) {
