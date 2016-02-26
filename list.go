@@ -28,6 +28,9 @@ func sourcelist() {
     fmt.Println("PAGES")
     list("pages/*.html")
     
+    fmt.Println("\nBLOG POSTS")
+    list("pages/blogs/*.md")
+    
     fmt.Println("\nGALLERIES")
     listdir("pages/gallery")
     

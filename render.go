@@ -32,14 +32,16 @@ import (
 
 var site = Site{    
         pagedir : "pages",
+        blogdir : "pages/blogs",
         srcdir : "src",
         gallerydir : "pages/gallery",
         templatedir : "templates",
 }
+
 var wd, _ = os.Getwd()
 
 type Site struct {
-        pagedir, srcdir, gallerydir, templatedir string
+        pagedir, blogdir, srcdir, gallerydir, templatedir string
 }
 
 func (site Site) createFolder () {
@@ -51,8 +53,10 @@ func (site Site) createFolder () {
         // Create directories for temporary files and newly rendered site
         
         os.MkdirAll("temp/"+site.pagedir, 0755)
+        os.MkdirAll("temp/"+site.blogdir, 0755)
         os.MkdirAll("temp/"+site.gallerydir, 0755)
         os.MkdirAll("rendered/"+site.pagedir, 0755)
+        os.MkdirAll("rendered/"+site.blogdir, 0755)
         os.MkdirAll("rendered/"+site.gallerydir, 0755)
 }
 
@@ -65,17 +69,24 @@ func (site Site) copySrc () {
         }
 }
 
-func (site Site) renderPages() {
+func (site Site) render() {
         
         // declare variables
         
         all_pages := []string{}
         draft_pages := []string{}
+
+        all_galleries := []string{}
+        all_galleries_name := []string{}
+        
+        // all_blogs := []string{}
+        // all_blogs_name := []string{}
+        
+
         menu_item := []string{}
         menu := make(map[int64]string)
         menuname := make(map[int64]string)
-        all_galleries := []string{}
-        all_galleries_name := []string{}
+
         
         // move the pages to the temporary directory
         
@@ -190,20 +201,18 @@ func (site Site) renderPages() {
         /* create gallery.html content and sub-gallery htmls */
         
         if _, err := os.Stat(site.pagedir+"/gallery.html"); os.IsNotExist(err) {
-        copyfile(site.templatedir+"/gallery_template.html", site.pagedir+"/gallery.html")
-        
-        now := time.Now().Format(time.RFC1123)
-        prepend("status          : posted\n------------------------------------------------------------------------", "pages/gallery.html")    
-        prepend("menu name       : gallery", "pages/gallery.html")
-        prepend("menu order      : 10", "pages/gallery.html")
-        prepend("present in menu : y", "pages/gallery.html")
-        prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/gallery.html")
-    }
+                copyfile(site.templatedir+"/gallery_template.html", site.pagedir+"/gallery.html")
+                
+                now := time.Now().Format(time.RFC1123)
+                prepend("status          : posted\n------------------------------------------------------------------------", "pages/gallery.html")    
+                prepend("menu name       : gallery", "pages/gallery.html")
+                prepend("menu order      : 10", "pages/gallery.html")
+                prepend("present in menu : y", "pages/gallery.html")
+                prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/gallery.html")
+        }
         
         dirs, _ := ioutil.ReadDir ("temp/"+site.gallerydir+"/")
-        
 
-        
         i = 0
         for i < len(dirs) {
                 if dirs[i].IsDir() == true {
@@ -304,6 +313,20 @@ func (site Site) renderPages() {
         }
         substitute("temp/"+site.pagedir+"/gallery.html","<<~~GALLERYITEM~~>>","")
         copyfile("temp/"+site.pagedir+"/gallery.html", "rendered/pages/gallery.html")
+
+        
+        // RENDER BLOG POSTS
+        //
+        // Functionality
+        // 
+        // - list of all blogs
+        // - pagination
+        // - taxonomy
+        // - author
+        // - shortlist with x titles
+        // - sorting on date
+        //
+        
 }
 
 func render_site() {
@@ -311,7 +334,7 @@ func render_site() {
         fmt.Println("Rendering!")
         site.createFolder()
         site.copySrc ()
-        site.renderPages()
+        site.render()
         
         // Remove the temporary files 
         

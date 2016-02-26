@@ -14,7 +14,6 @@
 
 // TODO
 //
-// add blog page
 // add responsive image breakpoints
 
 package main
@@ -39,39 +38,42 @@ func main() {
 
 	postCommand := flag.NewFlagSet("post", flag.ExitOnError)
 	pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
+	blogPostFlag := postCommand.String("blog", "", "Name of the page to be posted.")
 
 	unpostCommand := flag.NewFlagSet("unpost", flag.ExitOnError)
 	pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
+	blogUnpostFlag := unpostCommand.String("blog", "", "Name of the page to be unposted.")
 
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
 		fmt.Println("The most commonly used stare commands are: \n")
 		fmt.Println(" render      Renders the website.\n")
-		fmt.Println(" list        Lists all pages and galleries.\n")
+		fmt.Println(" list        Lists all pages, blog posts and galleries.\n")
 		fmt.Println(" create")
 		fmt.Println("   -page     Creates a new page")
-		fmt.Println("   -gallery  Create a new gallery\n")
+		fmt.Println("   -gallery  Create a new gallery")
 		fmt.Println("   -blog     Create a new blog post\n")
 		fmt.Println(" post")
-		fmt.Println("   -page     Posts a page\n")
+		fmt.Println("   -page     Posts a page")
+		fmt.Println("   -blog     Posts a blog post\n")
 		fmt.Println(" unpost")
-		fmt.Println("   -page     Unposts a page\n")
-		fmt.Println(" archive     Archives a page.")
+		fmt.Println("   -page     Unposts a page")
+		fmt.Println("   -blog     Unposts a blog post\n")
+		fmt.Println(" archive")
 		fmt.Println("   -page     Archives a page")
-		fmt.Println("   -gallery  Archives a gallery\n")
+		fmt.Println("   -gallery  Archives a gallery")
+		fmt.Println("   -blog     Archives a blog post\n")
 		return
 	}
 
 	switch os.Args[1] {
 	case "render":
-		// renderCommand.Parse(os.Args[2:])
 		render_site()
 	case "create":
 		createCommand.Parse(os.Args[2:])
 	case "archive":
 		archiveCommand.Parse(os.Args[2:])
 	case "list":
-	    // listCommand.Parse(os.Args[2:])
 	    sourcelist()
 	case "post":
 		postCommand.Parse(os.Args[2:])
@@ -108,11 +110,23 @@ func main() {
 	}
 	
 	if postCommand.Parsed() {
-		post_page(*pagePostFlag)
+		if *pagePostFlag == "" && *blogPostFlag == "" {
+			fmt.Println("Please provide the page name using -page option or the blog post using -blog.")
+		} else if *pagePostFlag != "" {
+			post(*pagePostFlag, "pages/")
+		} else if *blogPostFlag != "" {
+			post(*blogPostFlag, "pages/blogs/")
+		}
 	}
 
 	if unpostCommand.Parsed() {
-		unpost_page(*pageUnpostFlag)
+		if *pageUnpostFlag == "" && *blogUnpostFlag == "" {
+			fmt.Println("Please provide the page name using -page option or the blog post using -blog.")
+		} else if *pageUnpostFlag != "" {
+			unpost(*pageUnpostFlag, "pages/")
+		} else if *blogUnpostFlag != "" {
+			unpost(*blogUnpostFlag, "pages/blogs/")
+		}
 	}
 
 }
