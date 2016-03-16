@@ -79,8 +79,9 @@ func (site Site) render() {
         all_galleries := []string{}
         all_galleries_name := []string{}
         
-        // all_blogs := []string{}
-        // all_blogs_name := []string{}
+        all_blogs := []string{}
+        draft_blogs := []string{}
+        // all_blogs_taxonomy := make(map[string]string)
         
 
         menu_item := []string{}
@@ -97,11 +98,12 @@ func (site Site) render() {
         
         item, _ := filepath.Glob("temp/"+site.pagedir+"/*.html")
         
+        // complete all_pages with all posted pages and draft_pages with all in draft pages
+        // complete menu and menuname 
         // check whether the page is posted
         // check whether the page should be present in the menu        
         
-        i := 0
-        for i < len(item) {
+        for i := 0; i < len(item); i++ {
         
                 input, err := ioutil.ReadFile(item[i])
                 if err != nil {
@@ -110,12 +112,10 @@ func (site Site) render() {
         
                 lines := strings.Split(string(input), "\n")
                 
-                j := 1
-                for j < 6  {
+                for j := 1; j < 6; j++  {
                         if strings.Contains(lines[j], "posted") == true {
                                 all_pages = append(all_pages, item[i])
-                                k := 1
-                                for k < 6 {
+                                for k := 1; k < 6; k++ {
                                         if strings.Contains(lines[k], "present in menu : y") == true {
                                                 menu_order, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
                                                 menu_item = append(menu_item, strings.Split(item[i], "/")[2])
@@ -125,30 +125,63 @@ func (site Site) render() {
                                                 menu_order, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
                                                 menuname[menu_order] = strings.Split(lines[k], ": ")[1]
                                         }
-                                        k += 1
                                 }
                         } 
                         if strings.Contains(lines[j], "in_draft") == true {
                                 draft_pages = append(draft_pages, item[i])
                         }
-                j += 1
                 }
-        i += 1
         }
 
-        fmt.Println("The following pages will be rendered: ")
-        b:= 0
-        for b < len (all_pages) {
-                fmt.Println(all_pages[b])
-                b += 1
+        // create all_blogs and all_blogsname
+
+        // declare item
+        
+        item, _ = filepath.Glob("temp/"+site.blogdir+"/*.md")
+        
+        // complete all_blogs with all posted blogs and draft_blogs with all in draft blogs
+        // check whether the page is in draft
+        
+        for i := 0; i < len(item); i++ {
+        
+                input, err := ioutil.ReadFile(item[i])
+                if err != nil {
+                        log.Fatalln(err)
                 }
         
-        if len(draft_pages) != 0 {
-                fmt.Println("The following pages are still in draft and will not be rendered: ")
-                b = 0
-                for b < len (draft_pages) {
-                        fmt.Println(draft_pages[b])
-                        b += 1
+                lines := strings.Split(string(input), "\n")
+                
+                for j := 1; j < 6; j++  {
+                        if strings.Contains(lines[j], "posted") == true {
+                                all_blogs = append(all_blogs, item[i])
+                        } 
+                        if strings.Contains(lines[j], "in_draft") == true {
+                                draft_blogs = append(draft_blogs, item[i])
+                        }
+                }
+        }
+
+        // give an overview of rendered pages and blogs and draft pages and blogs
+
+        fmt.Println("The following pages and blog posts will be rendered: ")
+        
+        for i := 0; i < len (all_pages); i++ {
+                fmt.Println(all_pages[i])
+                }
+        
+        for i := 0; i < len(all_blogs); i++ {
+                fmt.Println(all_blogs[i])
+        }
+        
+        if len(draft_pages) != 0 || len(draft_blogs) != 0 {
+                fmt.Println("The following pages and blog posts are still in draft and will not be rendered: ")
+                
+                for i := 0; i < len (draft_pages); i++ {
+                        fmt.Println(draft_pages[i])
+                }
+                
+                for i := 0; i < len (draft_blogs); i++ {
+                        fmt.Println(draft_blogs[i])
                 }
         }
 
@@ -160,20 +193,17 @@ func (site Site) render() {
         // Cycling through all posted pages, then cycling through all menu items
         // Adding navlinks as necessary and resolving the ties
         
-        i = 0
-        for i < len(all_pages) {
+        for i := 0; i < len(all_pages); i++ {
                 inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
 
                 create_navbar(all_pages[i], menu, menuname, false)
 
-                
-                
-                /* populate the header and footer tie */
+                // populate the header and footer tie
                 
                 inject_html(all_pages[i], "<<~~HEADER~~>>", site.templatedir+"/header_template.html")
                 inject_html(all_pages[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html")
                 
-                /* resolve ties CSS, JS, PAGE */
+                // resolve ties CSS, JS, PAGE
                 
                 if strings.Split(all_pages[i],"/")[2] == "index.html" {
                         substitute(all_pages[i], "<<~~JS~~>>","js/")
@@ -194,11 +224,9 @@ func (site Site) render() {
                 } else {
                         copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
                 }
-                i += 1
-                
         }
 
-        /* create gallery.html content and sub-gallery htmls */
+        // create gallery.html content and sub-gallery htmls
         
         if _, err := os.Stat(site.pagedir+"/gallery.html"); os.IsNotExist(err) {
                 copyfile(site.templatedir+"/gallery_template.html", site.pagedir+"/gallery.html")
@@ -213,18 +241,15 @@ func (site Site) render() {
         
         dirs, _ := ioutil.ReadDir ("temp/"+site.gallerydir+"/")
 
-        i = 0
-        for i < len(dirs) {
+        for i := 0; i < len(dirs); i++ {
                 if dirs[i].IsDir() == true {
                         copyfile("." + string(filepath.Separator) + site.templatedir + string(filepath.Separator) + "subgallery_template.html", "." + string(filepath.Separator) + "temp" + string(filepath.Separator) + "pages" + string(filepath.Separator) + "gallery" + string(filepath.Separator) + dirs[i].Name() + ".html")
                         all_galleries = append(all_galleries, "temp/pages/gallery/"+dirs[i].Name()+".html")
                         all_galleries_name = append(all_galleries_name, dirs[i].Name())
                 }
-                i += 1
         }
         
-        i = 0
-        for i < len(all_galleries) {
+        for i := 0; i < len(all_galleries); i++ {
 
                 inject_html("temp/"+site.pagedir+"/gallery.html", "<<~~GALLERYITEM~~>>", "templates/gallery_item.html")
                 
@@ -248,8 +273,7 @@ func (site Site) render() {
                 copydir(imagepath, renderpath)
                 
                 images, _ := filepath.Glob(imagepath+"*")
-                a := 0
-                for a < len(images) {
+                for a := 0; a < len(images); a++ {
                         substitute("temp/pages/gallery.html","<<~~SUBGALLERYLINK~~>>","gallery/"+all_galleries_name[i]+".html")
                         substitute("temp/pages/gallery.html","<<~~SUBGALLERYTHUMB~~>>",strings.Split(strings.Split(images[a],"temp/pages/")[1],".")[0]+"_thumb.jpg")
                         substitute("temp/pages/gallery.html","<<~~SUBGALLERYNAME~~>>",all_galleries_name[i])
@@ -259,57 +283,39 @@ func (site Site) render() {
                         substitute(all_galleries[i],"<<~~SUBIMAGETHUMB~~>>", strings.Split(strings.Split(images[a],"temp/pages/gallery/")[1],".")[0]+"_thumb.jpg")
 
                         resize_picture(images[a], renderpath)
-                        
-                        a += 1
                 }
 
-                //
+                // Remove final trailing tie
                 
                 substitute(all_galleries[i],"<<~~SUBGALLERYITEM~~>>","")
 
-                //
+                // Insert the Gallery name as title
                 
                 substitute(all_galleries[i], "<<~~GALLERYTITLE~~>>",all_galleries_name[i])
                 
-                /* inject header and navbar */
+                // inject header and navbar
                 
                 inject_html(all_galleries[i], "<<~~HEADER~~>>", site.templatedir+"/header_template.html")
                 inject_html(all_galleries[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
                 
-                /* populate navbar with the correct links */
+                // populate navbar with the correct links
 
                 create_navbar(all_galleries[i], menu, menuname, true)
-                
-                // for j := 0; j < len(menu_item); j++ {
-                //         var orig_link string = menu[int64(j)]
-                //         page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
-                //         page_name := strings.Split(strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1], ".")[0]
-                //         inject_nav_items(all_galleries[i], "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
-                //         substitute(all_galleries[i],"<<~~NAVACTIVE~~>>", "")
-                //         if page_link == "index.html" {
-                //                 substitute(all_galleries[i], "<<~~NAVLINK~~>>","../../"+page_link)
-                //         } else {
-                //                 substitute(all_galleries[i], "<<~~NAVLINK~~>>","../"+page_link)
-                //         }
-                //         substitute(all_galleries[i], "<<~~NAVITEM~~>>",page_name)
-                // }
-                // substitute(all_galleries[i], "<<~~NAVLIST~~>>","")
 
-                /* populate the footer tie */
+                // populate the footer tie
                 
                 inject_html(all_galleries[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html")                
                 
-                /* resolve ties CSS, JS, PAGE */
+                // resolve ties CSS, JS, PAGE
                 
                 substitute(all_galleries[i], "<<~~JS~~>>","../../js/")
                 substitute(all_galleries[i], "<<~~CSS~~>>","../../css/")
                 substitute(all_galleries[i], "<<~~PAGE~~>>","../")
                 
                 //remove_header(all_galleries[i])
+                
                 copyfile(all_galleries[i], "rendered/"+site.gallerydir+"/"+strings.Split(all_galleries[i],"/")[3])
                 copydir("temp/"+site.gallerydir+"/"+all_galleries_name[i], "rendered/pages/gallery/"+all_galleries_name[i])
-                i += 1
-                
         }
         substitute("temp/"+site.pagedir+"/gallery.html","<<~~GALLERYITEM~~>>","")
         copyfile("temp/"+site.pagedir+"/gallery.html", "rendered/pages/gallery.html")
@@ -326,6 +332,7 @@ func (site Site) render() {
         // - shortlist with x titles
         // - sorting on date
         //
+
         
 }
 
@@ -435,41 +442,39 @@ func inject_html (file, tie, html_source_file string) {
 }
 
 func create_navbar (page string, menu map[int64]string, menuname map[int64]string, galleryYN bool) {
-        j := 0
-                for j < 10 {
-                        if orig_link, ok := menu[int64(j)]; ok {        
-                                var page_name string = menuname[int64(j)]
-                                page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
-                                inject_nav_items(page, "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
-                                if page_link == strings.Split(page,"/")[2] {
-                                        substitute(page,"<<~~NAVACTIVE~~>>", "class=\"active\"")
-                                } else {
-                                        substitute(page,"<<~~NAVACTIVE~~>>", "")
-                                }
-                                
-                                if galleryYN == true {
-                                        if page_link == "index.html" {
-                                                substitute(page, "<<~~NAVLINK~~>>","../../"+page_link)
-                                        } else {
-                                                substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
-                                        }
-                                } else if strings.Split(page,"/")[2] == "index.html" {
-                                        if page_link == "index.html" {
-                                                substitute(page, "<<~~NAVLINK~~>>",page_link)
-                                        } else {
-                                                substitute(page, "<<~~NAVLINK~~>>",site.pagedir+"/"+page_link)
-                                        }
-                                } else {
-                                        if page_link == "index.html" {
-                                                substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
-                                        } else {
-                                                substitute(page, "<<~~NAVLINK~~>>",page_link)
-                                        }
-                                }
-                                substitute(page, "<<~~NAVITEM~~>>",page_name)
+        for j := 0; j < 10; j++ {
+                if orig_link, ok := menu[int64(j)]; ok {        
+                        var page_name string = menuname[int64(j)]
+                        page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
+                        inject_nav_items(page, "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
+                        if page_link == strings.Split(page,"/")[2] {
+                                substitute(page,"<<~~NAVACTIVE~~>>", "class=\"active\"")
+                        } else {
+                                substitute(page,"<<~~NAVACTIVE~~>>", "")
                         }
-                        j += 1
+                        
+                        if galleryYN == true {
+                                if page_link == "index.html" {
+                                        substitute(page, "<<~~NAVLINK~~>>","../../"+page_link)
+                                } else {
+                                        substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
+                                }
+                        } else if strings.Split(page,"/")[2] == "index.html" {
+                                if page_link == "index.html" {
+                                        substitute(page, "<<~~NAVLINK~~>>",page_link)
+                                } else {
+                                        substitute(page, "<<~~NAVLINK~~>>",site.pagedir+"/"+page_link)
+                                }
+                        } else {
+                                if page_link == "index.html" {
+                                        substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
+                                } else {
+                                        substitute(page, "<<~~NAVLINK~~>>",page_link)
+                                }
+                        }
+                        substitute(page, "<<~~NAVITEM~~>>",page_name)
                 }
+        }
         substitute(page, "<<~~NAVLIST~~>>","")        
 }
 
