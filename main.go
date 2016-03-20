@@ -22,7 +22,33 @@ import (
     "fmt"
     "flag"
     "os"
+    "github.com/go-ini/ini"
 )
+
+// define variables
+
+var cfg, _ = ini.Load("config.ini")
+
+var site = Site{    
+        pagedir : "pages",
+        blogdir : "pages/blogs",
+        srcdir : "src",
+        gallerydir : "pages/gallery",
+        templatedir : "templates",
+        multiLang : cfg.Section("general").Key("multiple_language_support").MustBool(),
+        primaryLang : cfg.Section("general").Key("primary_language").String(),
+        languages : cfg.Section("general").Key("languages").Strings(","),
+}
+
+
+
+// define Site
+
+type Site struct {
+        pagedir, blogdir, srcdir, gallerydir, templatedir, primaryLang string
+        languages []string
+        multiLang bool
+}
 
 func main() {
 

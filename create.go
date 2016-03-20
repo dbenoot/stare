@@ -37,13 +37,12 @@ import (
 
 var now = time.Now().Format(time.RFC1123)
 
-func create_page(pagename string) {
+func createPage (pagename string, languagedir string) {
 
-    fmt.Println("Creating page " + pagename)
-    copyfile("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + pagename + ".html")
+    copyfile("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + languagedir + string(filepath.Separator) + pagename + ".html")
 
     
-    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+pagename+".html")
+    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+languagedir+"/"+pagename+".html")
     
     var menuyn string
     fmt.Println("Present in menubar (y/n)")
@@ -64,30 +63,61 @@ func create_page(pagename string) {
                     menuname, _ = reader.ReadString('\n')
                     menuname = strings.TrimSpace(menuname)
  
-            prepend("menu name       : "+menuname, "pages/"+pagename+".html")
-            prepend("menu order      : "+menuorder, "pages/"+pagename+".html")
-            prepend("present in menu : y", "pages/"+pagename+".html")
+            prepend("menu name       : "+menuname, "pages/"+languagedir+"/"+pagename+".html")
+            prepend("menu order      : "+menuorder, "pages/"+languagedir+"/"+pagename+".html")
+            prepend("present in menu : y", "pages/"+languagedir+"/"+pagename+".html")
         } else {
-            prepend("present in menu : n\nmenu order      : nap\nmenu name       : nap", "pages/"+pagename+".html")
+            prepend("present in menu : n\nmenu order      : nap\nmenu name       : nap", "pages/"+languagedir+"/"+pagename+".html")
         }
 
-    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/"+pagename+".html")
+    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/"+languagedir+"/"+pagename+".html")
+
 }
 
-func create_blog (blogName string) {
-    fmt.Println("Creating blog " + blogName)
-    if _, err := os.Stat("pages/blogs/"); os.IsNotExist(err) {
-        os.MkdirAll("pages/blogs/", 0755)
+func createBlog (blogName string, languagedir string) {
+    if _, err := os.Stat("pages/"+languagedir+"/blogs/"); os.IsNotExist(err) {
+        os.MkdirAll("pages/"+languagedir+"/blogs/", 0755)
     }
     
     filename := blogName+" - "+now+".md"
     
-    os.Create("pages/blogs/"+filename)
+    os.Create("pages/"+languagedir+"/blogs/"+filename)
     
-    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/blogs/"+filename)
-    prepend("taxonomies      : ", "pages/blogs/"+filename)
-    prepend("created by      :", "pages/blogs/"+filename)
-    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/blogs/"+filename)
+    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+languagedir+"/blogs/"+filename)
+    prepend("taxonomies      : ", "pages/"+languagedir+"/blogs/"+filename)
+    prepend("created by      :", "pages/"+languagedir+"/blogs/"+filename)
+    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/"+languagedir+"/blogs/"+filename)
+
+}
+
+func create_page (pageName string) {
+
+    fmt.Println("Creating page " + pageName)
+    if site.multiLang == true {
+        for i := 0; i < len(site.languages); i++ {
+            fmt.Println(site.languages[i])
+            
+            os.MkdirAll("pages" + string(filepath.Separator) + site.languages[i] ,0755)
+            createPage(pageName, site.languages[i])
+        }
+    } else {
+        languagedir := ""
+        createPage(pageName, languagedir)
+    }
+}
+
+func create_blog (blogName string) {
+
+    fmt.Println("Creating blog " + blogName)
+    if site.multiLang == true {
+        for i := 0; i < len(site.languages); i++ {
+
+            createBlog(blogName, site.languages[i])
+        }
+    } else {
+        languagedir := ""
+        createBlog(blogName, languagedir)
+    }
 }
 
 func create_gallery(galleryname string) {
