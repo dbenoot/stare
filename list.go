@@ -24,12 +24,29 @@ import (
     "path/filepath"
     )
 
+var j int
+
 func sourcelist() {
     fmt.Println("PAGES")
-    list("pages/*.html")
+    j = 1
+    if site.multiLang == true {
+        for i := 0; i < len(site.languages); i++ {
+            list("pages/"+site.languages[i]+"/*.html")
+        }
+    } else {
+        list("pages/*.html")
+    }
     
     fmt.Println("\nBLOG POSTS")
-    list("pages/blogs/*.md")
+    j = 1
+    if site.multiLang == true {
+        for i := 0; i < len(site.languages); i++ {
+            list("pages/"+site.languages[i]+"/blogs/*.md")
+        }
+    } else {
+        list("pages/blogs/*.md")
+    }    
+    
     
     fmt.Println("\nGALLERIES")
     listdir("pages/gallery")
@@ -40,10 +57,10 @@ func sourcelist() {
 func list (folder string) {
     files, _ := filepath.Glob(folder)
 
-    i := 0
-    for i < len(files) {
-           fmt.Println(i+1 , " - " , files[i])
-           i += 1 
+    
+    for i:= 0; i < len(files); i++ {
+           fmt.Println(j , " - " , files[i])
+           j += 1 
     }    
     
     }
