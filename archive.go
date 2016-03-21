@@ -29,22 +29,38 @@ import (
 func archive_page(pagename string) {
     fmt.Println("Archiving page " + pagename)
     
-    path := "archive" + string(filepath.Separator) + "pages" + string(filepath.Separator)
+    var language string
+    
+    if site.multiLang == true {
+        language = strings.Split(pagename, "/")[0]
+        pagename = strings.Split(pagename, "/")[1]
+    }
+    
+    path := "archive" + string(filepath.Separator)+ language + string(filepath.Separator) + "pages" + string(filepath.Separator)
+    fmt.Println(path)
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
     }
     
-    move("pages" + string(filepath.Separator) + pagename+".html", path + pagename + ".html")
+    move("pages" + string(filepath.Separator) + language + string(filepath.Separator) + pagename+".html", path + pagename + ".html")
 }
 
 func archive_blog(blogname string) {
     
     var blogId int
+    var language string
     
     // Check whether the path exists and create if necessary
     
-    path := "archive/pages/blogs/"
+     if site.multiLang == true {
+        language = strings.Split(blogname, "/")[0]
+        blogname = strings.Split(blogname, "/")[1]
+    }   
+    
+    path := "archive/pages/"+language+"/blogs/"
+    
+    
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
@@ -52,7 +68,7 @@ func archive_blog(blogname string) {
     
     // Read all blog posts which contain the entered string
     
-    blogposts, _ := filepath.Glob("pages/blogs/"+blogname+"*")
+    blogposts, _ := filepath.Glob("pages/"+language+"/blogs/"+blogname+"*")
 
     // Select the correct blog post by assigning the correct blogId
     // If only 1 post is applicable, set the blogId
@@ -78,7 +94,7 @@ func archive_blog(blogname string) {
     } else {
         filename := strings.Split(blogposts[blogId],"/")[len(strings.Split(blogposts[blogId],"/"))-1]
         fmt.Println("Archiving blog post ", filename)
-        move(blogposts[blogId], "archive/pages/blogs/"+filename)
+        move(blogposts[blogId], "archive/pages/"+language+"/blogs/"+filename)
     }
 }
 
