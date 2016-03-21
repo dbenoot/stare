@@ -23,7 +23,7 @@ import (
         "os"
         "path/filepath"
         "fmt"
-        "github.com/go-ini/ini"
+        //"github.com/go-ini/ini"
         "github.com/nfnt/resize"
         "image/jpeg"
         "strconv"
@@ -32,28 +32,10 @@ import (
 )
 
 
-// define variables
 
-var cfg, _ = ini.Load("config.ini")
-
-var site = Site{    
-        pagedir : "pages",
-        blogdir : "pages/blogs",
-        srcdir : "src",
-        gallerydir : "pages/gallery",
-        templatedir : "templates",
-        multiLang : cfg.Section("general").Key("multiple_language_support").MustBool(),
-}
 
 var wd, _ = os.Getwd()
 
-
-// define Site
-
-type Site struct {
-        pagedir, blogdir, srcdir, gallerydir, templatedir string
-        multiLang bool
-}
 
 
 // define Site functions
@@ -95,7 +77,20 @@ func (site Site) copyFiles () {
         copyfile(site.templatedir+"/navbar_template.html", "temp/navbar.html")
 }
 
-func (site Site) renderPages(pages []string) {
+func (site Site) copyFilesLangSupp (language string) {
+
+        // move the pages to the temporary directory
+        
+        copydir(site.pagedir, "temp/"+language+"/"+site.pagedir)
+        copydir(site.gallerydir, "temp/"+language+"/"+site.gallerydir)
+        
+        // copy the navbar template to the temp folder 
+
+        copyfile(site.templatedir+"/navbar_template.html", "temp/navbar.html")
+}
+
+
+func (site Site) renderPages(pages []string, shortLang string, longLang string) {
 
         // complete menu and menuName
         // define posted and draft pages
@@ -133,11 +128,13 @@ func (site Site) renderPages(pages []string) {
                 
                 // Copy files to the correct location
                 
+                // LANG update : if site.multiLang == true && shortLang == site.primaryLang then
                 if strings.Split(all_pages[i],"/")[2] == "index.html" {
                         copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[2])
                 } else {
                         copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
                 }
+                // else move everything in same folder --> !! similar updates in create_navbar
         }
 
         // give an overview of rendered pages and blogs and draft pages and blogs
@@ -595,8 +592,12 @@ func render_site() {
         fmt.Println("Rendering!")
         site.createFolder()
         site.copySrc()
-        site.copyFiles()
         
+        if site.multiLang == false {
+                site.copyFiles()
+        } else {
+                site.copyFilesLangSupp("nl")
+        }
         // list all html pages in temp
         // list all blog posts in temp
         // list all gallery dirs in temp
@@ -605,7 +606,7 @@ func render_site() {
         blogs, _ := filepath.Glob("temp/"+site.blogdir+"/*.md")
         dirs, _ := ioutil.ReadDir ("temp/"+site.gallerydir+"/")
         
-        site.renderPages(pages)
+        site.renderPages(pages, "nl", "nederlands")
         site.renderBlogs(blogs, pages)
         site.renderGalleries(dirs, pages)
         
