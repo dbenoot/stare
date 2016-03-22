@@ -31,11 +31,7 @@ import (
         "path"
 )
 
-
-
-
 var wd, _ = os.Getwd()
-
 
 
 // define Site functions
@@ -48,12 +44,24 @@ func (site Site) createFolder () {
         
         // Create directories for temporary files and newly rendered site
         
-        os.MkdirAll("temp/"+site.pagedir, 0755)
-        os.MkdirAll("temp/"+site.blogdir, 0755)
-        os.MkdirAll("temp/"+site.gallerydir, 0755)
-        os.MkdirAll("rendered/"+site.pagedir, 0755)
-        os.MkdirAll("rendered/"+site.blogdir, 0755)
-        os.MkdirAll("rendered/"+site.gallerydir, 0755)
+        if site.multiLang == true {
+                for i := 0; i < len(site.languages); i++ {
+                        os.MkdirAll("temp/"+site.pagedir+"/"+site.languages[i], 0755)
+                        os.MkdirAll("temp/"+site.pagedir+"/"+site.languages[i]+"/"+site.blogdir, 0755)
+                        os.MkdirAll("temp/"+site.gallerydir+"/"+site.languages[i], 0755)
+                        os.MkdirAll("rendered/"+site.pagedir+"/"+site.languages[i], 0755)
+                        os.MkdirAll("rendered/"+site.blogdir+"/"+site.languages[i], 0755)
+                        os.MkdirAll("rendered/"+site.gallerydir+"/"+site.languages[i], 0755)
+                }   
+        } else {
+                os.MkdirAll("temp/"+site.pagedir, 0755)
+                os.MkdirAll("temp/"+site.pagedir+"/"+site.blogdir, 0755)
+                os.MkdirAll("temp/"+site.gallerydir, 0755)
+                os.MkdirAll("rendered/"+site.pagedir, 0755)
+                os.MkdirAll("rendered/"+site.blogdir, 0755)
+                os.MkdirAll("rendered/"+site.gallerydir, 0755)
+        }
+        
 }
 
 func (site Site) copySrc () {
@@ -67,28 +75,22 @@ func (site Site) copySrc () {
 
 func (site Site) copyFiles () {
 
-        // move the pages to the temporary directory
-        
-        copydir(site.pagedir, "temp/"+site.pagedir)
-        copydir(site.gallerydir, "temp/"+site.gallerydir)
-        
+        // move the pages, blogs and galleries to the temporary directory
+        if site.multiLang == true {
+                for i := 0; i < len(site.languages); i++ {
+                        copydir(site.pagedir+"/"+site.languages[i], "temp/"+site.pagedir+"/"+site.languages[i])
+                        copydir(site.pagedir+"/"+site.languages[i]+"/"+site.blogdir, "temp/"+site.pagedir+"/"+site.languages[i]+"/"+site.blogdir)
+                        copydir(site.gallerydir, "temp/"+site.gallerydir+"/"+site.languages[i]) //TODO remove 'pages/' form gallery in site object
+                }
+        } else {
+                copydir(site.pagedir, "temp/"+site.pagedir)
+                copydir(site.pagedir+"/"+site.blogdir, "temp/"+site.pagedir+"/"+site.blogdir)
+                copydir(site.gallerydir, "temp/"+site.gallerydir) //TODO remove 'pages/' form gallery in site object
+        }
         // copy the navbar template to the temp folder 
 
         copyfile(site.templatedir+"/navbar_template.html", "temp/navbar.html")
 }
-
-func (site Site) copyFilesLangSupp (language string) {
-
-        // move the pages to the temporary directory
-        
-        copydir(site.pagedir, "temp/"+language+"/"+site.pagedir)
-        copydir(site.gallerydir, "temp/"+language+"/"+site.gallerydir)
-        
-        // copy the navbar template to the temp folder 
-
-        copyfile(site.templatedir+"/navbar_template.html", "temp/navbar.html")
-}
-
 
 func (site Site) renderPages(pages []string, shortLang string, longLang string) {
 

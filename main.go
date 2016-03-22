@@ -31,7 +31,7 @@ var cfg, _ = ini.Load("config.ini")
 
 var site = Site{    
         pagedir : "pages",
-        blogdir : "pages/blogs",
+        blogdir : "blogs",
         srcdir : "src",
         gallerydir : "pages/gallery",
         templatedir : "templates",

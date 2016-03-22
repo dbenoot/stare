@@ -5,15 +5,20 @@ ini file to define languages
 - primary language : xx, xxxxx (where xx = language code and xxxxx = full language name)
 - secondary language : xx, xxxxx (where xx = language code and xxxxx = full language name)
 - secondary language : xx, xxxxx (where xx = language code and xxxxx = full language name)
+DONE
 
 pages in language: xx/pages (where xx = language code)
+DONE
 
 menu per language!
 menu has language shortcuts on the right side (select?)
 
 create -> makes pages in all languages
-archive ->  archives pages in all languages 
-post -> per language??
+DONE
+archive ->  archives pages per language
+DONE
+post -> per language
+DONE
 
 Language link on page must go to the same translated page, not language homepage
 
