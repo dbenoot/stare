@@ -33,7 +33,7 @@ var site = Site{
         pagedir : "pages",
         blogdir : "blogs",
         srcdir : "src",
-        gallerydir : "pages/gallery",
+        gallerydir : "gallery",
         templatedir : "templates",
         multiLang : cfg.Section("general").Key("multiple_language_support").MustBool(),
         primaryLang : cfg.Section("general").Key("primary_language").String(),

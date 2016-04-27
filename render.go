@@ -45,13 +45,15 @@ func (site Site) createFolder () {
         // Create directories for temporary files and newly rendered site
         
         if site.multiLang == true {
+                
+                os.MkdirAll("temp/"+site.gallerydir, 0755)
+                os.MkdirAll("rendered/"+site.gallerydir, 0755)
+                
                 for i := 0; i < len(site.languages); i++ {
                         os.MkdirAll("temp/"+site.pagedir+"/"+site.languages[i], 0755)
                         os.MkdirAll("temp/"+site.pagedir+"/"+site.languages[i]+"/"+site.blogdir, 0755)
-                        os.MkdirAll("temp/"+site.gallerydir+"/"+site.languages[i], 0755)
                         os.MkdirAll("rendered/"+site.pagedir+"/"+site.languages[i], 0755)
                         os.MkdirAll("rendered/"+site.blogdir+"/"+site.languages[i], 0755)
-                        os.MkdirAll("rendered/"+site.gallerydir+"/"+site.languages[i], 0755)
                 }   
         } else {
                 os.MkdirAll("temp/"+site.pagedir, 0755)
@@ -80,19 +82,19 @@ func (site Site) copyFiles () {
                 for i := 0; i < len(site.languages); i++ {
                         copydir(site.pagedir+"/"+site.languages[i], "temp/"+site.pagedir+"/"+site.languages[i])
                         copydir(site.pagedir+"/"+site.languages[i]+"/"+site.blogdir, "temp/"+site.pagedir+"/"+site.languages[i]+"/"+site.blogdir)
-                        copydir(site.gallerydir, "temp/"+site.gallerydir+"/"+site.languages[i]) //TODO remove 'pages/' form gallery in site object
+                        copydir(site.gallerydir, "temp/"+site.pagedir+"/"+site.gallerydir)
                 }
         } else {
                 copydir(site.pagedir, "temp/"+site.pagedir)
                 copydir(site.pagedir+"/"+site.blogdir, "temp/"+site.pagedir+"/"+site.blogdir)
-                copydir(site.gallerydir, "temp/"+site.gallerydir) //TODO remove 'pages/' form gallery in site object
+                copydir(site.gallerydir, "temp/"+site.pagedir+"/"+site.gallerydir) 
         }
         // copy the navbar template to the temp folder 
 
         copyfile(site.templatedir+"/navbar_template.html", "temp/navbar.html")
 }
 
-func (site Site) renderPages(pages []string, shortLang string, longLang string) {
+func (site Site) renderPages(pages []string, language string) {
 
         // complete menu and menuName
         // define posted and draft pages
@@ -105,36 +107,68 @@ func (site Site) renderPages(pages []string, shortLang string, longLang string) 
         // adding navlinks as necessary and resolving the ties
         
         for i := 0; i < len(all_pages); i++ {
-                inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
-
-                create_navbar(all_pages[i], menu, menuName, false)
+                if site.multiLang == true {
+                        inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/"+language+"/navbar.html")
+                } else {
+                        inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
+                }
+                create_navbar(all_pages[i], language, menu, menuName, false)
 
                 // populate the header and footer tie
                 
-                inject_html(all_pages[i], "<<~~HEADER~~>>", site.templatedir+"/header_template.html")
-                inject_html(all_pages[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html")
+                inject_html(all_pages[i], "<<~~HEADER~~>>", site.templatedir+"/"+language+"/header_template.html")
+                inject_html(all_pages[i], "<<~~FOOTER~~>>", site.templatedir+"/"+language+"/footer_template.html")
                 
                 // resolve ties CSS, JS, PAGE
-                
-                if strings.Split(all_pages[i],"/")[2] == "index.html" {
-                        substitute(all_pages[i], "<<~~JS~~>>","js/")
-                        substitute(all_pages[i], "<<~~CSS~~>>","css/")
-                        substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
-                } else {
-                        substitute(all_pages[i], "<<~~JS~~>>","../js/")
-                        substitute(all_pages[i], "<<~~CSS~~>>","../css/")
+                if site.multiLang == true && language == site.primaryLang {
+                        if strings.Split(all_pages[i],"/")[2] == "index.html" {
+                                substitute(all_pages[i], "<<~~JS~~>>","js/")
+                                substitute(all_pages[i], "<<~~CSS~~>>","css/")
+                                substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
+                                
+                                copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[2])
+                        } else {
+                                substitute(all_pages[i], "<<~~JS~~>>","../js/")
+                                substitute(all_pages[i], "<<~~CSS~~>>","../css/")
+                                substitute(all_pages[i], "<<~~PAGE~~>>","")
+                                
+                                copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
+                        }
+                } else if site.multiLang == true && language != site.primaryLang {
+                        substitute(all_pages[i], "<<~~JS~~>>","../../js/")
+                        substitute(all_pages[i], "<<~~CSS~~>>","../../css/")
                         substitute(all_pages[i], "<<~~PAGE~~>>","")
+                        
+                        copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
+                } else {
+                        if strings.Split(all_pages[i],"/")[2] == "index.html" {
+                                substitute(all_pages[i], "<<~~JS~~>>","js/")
+                                substitute(all_pages[i], "<<~~CSS~~>>","css/")
+                                substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
+                                
+                                copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[2])
+                        } else {
+                                substitute(all_pages[i], "<<~~JS~~>>","../js/")
+                                substitute(all_pages[i], "<<~~CSS~~>>","../css/")
+                                substitute(all_pages[i], "<<~~PAGE~~>>","")
+                                
+                                copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
+                        }
                 }
                 
                 remove_header(all_pages[i])
                 
                 // Copy files to the correct location
                 
-                // LANG update : if site.multiLang == true && shortLang == site.primaryLang then
-                if strings.Split(all_pages[i],"/")[2] == "index.html" {
-                        copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[2])
+                // LANG update : if site.multiLang == true && language == site.primaryLang then
+                if (site.multiLang == true && language == site.primaryLang) || site.multiLang == false {
+                        if strings.Split(all_pages[i],"/")[2] == "index.html" {
+                                copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[2])
+                        } else {
+                                copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
+                        }
                 } else {
-                        copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[2])
+                        copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+language+"/"+strings.Split(all_pages[i],"/")[2])
                 }
                 // else move everything in same folder --> !! similar updates in create_navbar
         }
@@ -160,7 +194,7 @@ func (site Site) renderBlogs(blogs []string, pages []string) {
         // create menu items for the navbar
         // define posted and draft blogs
         
-        menu, menuName := createMenu(pages)
+        //menu, menuName := createMenu(pages)
         all_blogs, draft_blogs := defineBlogs(blogs)
         
         // RENDER BLOG POSTS
@@ -175,8 +209,7 @@ func (site Site) renderBlogs(blogs []string, pages []string) {
         // - sorting on date
         //
         
-        fmt.Println(menu, menuName)
-        
+
         fmt.Println("The following blog posts were rendered: ")
         
         for i := 0; i < len(all_blogs); i++ {
@@ -191,7 +224,7 @@ func (site Site) renderBlogs(blogs []string, pages []string) {
         }
 }
 
-func (site Site) renderGalleries(dirs []os.FileInfo, pages []string) {
+func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language string) {
 
         // create menu items for the navbar
         // list all gallery directories in temp
@@ -231,8 +264,8 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string) {
 
                 inject_html("temp/"+site.pagedir+"/gallery.html", "<<~~GALLERYITEM~~>>", "templates/gallery_item.html")
 
-                imagepath := "temp/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
-                renderpath := "rendered/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
+                imagepath := "temp/"+site.pagedir+"/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
+                renderpath := "rendered/"+site.pagedir+"/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
                 
                 copydir(imagepath, renderpath)
                 
@@ -264,7 +297,7 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string) {
                 
                 // populate navbar with the correct links
 
-                create_navbar(all_galleries[i], menu, menuName, true)
+                create_navbar(all_galleries[i], language, menu, menuName, true)
 
                 // populate the footer tie
                 
@@ -278,8 +311,8 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string) {
                 
                 //remove_header(all_galleries[i])
                 
-                copyfile(all_galleries[i], "rendered/"+site.gallerydir+"/"+strings.Split(all_galleries[i],"/")[3])
-                copydir("temp/"+site.gallerydir+"/"+all_galleries_name[i], "rendered/pages/gallery/"+all_galleries_name[i])
+                copyfile(all_galleries[i], "rendered/"+site.pagedir+"/"+site.gallerydir+"/"+strings.Split(all_galleries[i],"/")[3])
+                copydir("temp/"+site.pagedir+"/"+site.gallerydir+"/"+all_galleries_name[i], "rendered/pages/gallery/"+all_galleries_name[i])
         }
         substitute("temp/"+site.pagedir+"/gallery.html","<<~~GALLERYITEM~~>>","")
         copyfile("temp/"+site.pagedir+"/gallery.html", "rendered/pages/gallery.html")
@@ -381,37 +414,50 @@ func inject_html (file, tie, html_source_file string) {
         } 
 }
 
-func create_navbar (page string, menu map[int64]string, menuName map[int64]string, galleryYN bool) {
+func create_navbar (page string, language string, menu map[int64]string, menuName map[int64]string, galleryYN bool) {
         for j := 0; j < 10; j++ {
                 if orig_link, ok := menu[int64(j)]; ok {        
+                        
                         var page_name string = menuName[int64(j)]
                         page_link := strings.Split(orig_link,"/")[len(strings.Split(orig_link,"/"))-1]
-                        inject_nav_items(page, "<<~~NAVLIST~~>>", site.templatedir+"/navbar_item.html")
+                        
+                        inject_nav_items(page, "<<~~NAVLIST~~>>", site.templatedir+"/"+language+"/navbar_item.html")
+                        
                         if page_link == strings.Split(page,"/")[2] {
                                 substitute(page,"<<~~NAVACTIVE~~>>", "class=\"active\"")
                         } else {
                                 substitute(page,"<<~~NAVACTIVE~~>>", "")
                         }
                         
-                        if galleryYN == true {
-                                if page_link == "index.html" {
-                                        substitute(page, "<<~~NAVLINK~~>>","../../"+page_link)
+                        if (site.multiLang == true && language == site.primaryLang) || site.multiLang == false {
+                                if galleryYN == true {
+                                        if page_link == "index.html" {
+                                                substitute(page, "<<~~NAVLINK~~>>","../../"+page_link)
+                                        } else {
+                                                substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
+                                        }
+                                } else if strings.Split(page,"/")[2] == "index.html" {
+                                        if page_link == "index.html" {
+                                                substitute(page, "<<~~NAVLINK~~>>",page_link)
+                                        } else {
+                                                substitute(page, "<<~~NAVLINK~~>>",site.pagedir+"/"+page_link)
+                                        }
                                 } else {
-                                        substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
-                                }
-                        } else if strings.Split(page,"/")[2] == "index.html" {
-                                if page_link == "index.html" {
-                                        substitute(page, "<<~~NAVLINK~~>>",page_link)
-                                } else {
-                                        substitute(page, "<<~~NAVLINK~~>>",site.pagedir+"/"+page_link)
+                                        if page_link == "index.html" {
+                                                substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
+                                        } else {
+                                                substitute(page, "<<~~NAVLINK~~>>",page_link)
+                                        }
                                 }
                         } else {
-                                if page_link == "index.html" {
+                                if galleryYN == true {
                                         substitute(page, "<<~~NAVLINK~~>>","../"+page_link)
                                 } else {
                                         substitute(page, "<<~~NAVLINK~~>>",page_link)
                                 }
                         }
+                                
+                        
                         substitute(page, "<<~~NAVITEM~~>>",page_name)
                 }
         }
@@ -452,13 +498,13 @@ func remove_header (file string) {
         }
         
         lines := strings.Split(string(input), "\n")
-        i := 0
-        for i <= 6 {
-                lines = append(lines[:0], lines[1:]...)
-                // lines[i] = strings.Replace(lines[line], tie, replacetext, -1)
-                i += 1
-        }
         
+        for i := 0; i <= 6; i++ {
+                lines = append(lines[:0], lines[1:]...)
+                
+        }
+
+
         output := strings.Join(lines, "\n")
         err = ioutil.WriteFile(file, []byte(output), 0644)
         if err != nil {
@@ -594,25 +640,32 @@ func render_site() {
         fmt.Println("Rendering!")
         site.createFolder()
         site.copySrc()
+        site.copyFiles()
         
         if site.multiLang == false {
-                site.copyFiles()
+                pages, _ := filepath.Glob("temp/"+site.pagedir+"/*.html")
+                blogs, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.blogdir+"/*.md")
+                dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
+                
+                site.renderPages(pages, "")
+                site.renderBlogs(blogs, pages)
+                site.renderGalleries(dirs, pages, "")
         } else {
-                site.copyFilesLangSupp("nl")
+                for i := 0; i < len(site.languages); i++ {
+                        
+                        fmt.Println("Multilanguage site - rendering language ", site.languages[i])
+                        
+                        pages, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.languages[i]+"/*.html")
+                        blogs, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.languages[i]+"/"+site.blogdir+"/*.md")
+                        //dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
+                        
+                        site.renderPages(pages, site.languages[i])
+                        site.renderBlogs(blogs, pages)
+                        //site.renderGalleries(dirs, pages, site.languages[i])
+                }
         }
-        // list all html pages in temp
-        // list all blog posts in temp
-        // list all gallery dirs in temp
-        
-        pages, _ := filepath.Glob("temp/"+site.pagedir+"/*.html")
-        blogs, _ := filepath.Glob("temp/"+site.blogdir+"/*.md")
-        dirs, _ := ioutil.ReadDir ("temp/"+site.gallerydir+"/")
-        
-        site.renderPages(pages, "nl", "nederlands")
-        site.renderBlogs(blogs, pages)
-        site.renderGalleries(dirs, pages)
-        
+
         // Remove the temporary files 
         
-        os.RemoveAll(path.Join(wd, "temp"))
+        //os.RemoveAll(path.Join(wd, "temp"))
 }
