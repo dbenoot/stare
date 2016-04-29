@@ -32,7 +32,7 @@ import (
 )
 
 var wd, _ = os.Getwd()
-
+var pagesAllLang []string
 
 // define Site functions
 
@@ -119,49 +119,99 @@ func (site Site) renderPages(pages []string, language string) {
                 
                 // resolve ties CSS, JS, PAGE
                 
-                fmt.Println (site.multiLang, " - ", language, " - ", site.primaryLang)
-                
                 if site.multiLang == true && language == site.primaryLang {
                         if strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1] == "index.html" {
                                 substitute(all_pages[i], "<<~~JS~~>>","js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","css/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
-                                
-                                copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1])
                         } else {
                                 substitute(all_pages[i], "<<~~JS~~>>","../../js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","../../css/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","")
-                                
-                                copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1])
                         }
                 } else if site.multiLang == true && language != site.primaryLang {
                         substitute(all_pages[i], "<<~~JS~~>>","../../js/")
                         substitute(all_pages[i], "<<~~CSS~~>>","../../css/")
                         substitute(all_pages[i], "<<~~PAGE~~>>","")
-                        
-                        copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1])
                 } else {
                         if strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1] == "index.html" {
-                                
                                 substitute(all_pages[i], "<<~~JS~~>>","js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","css/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
-                                
-                                copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1])
                         } else {
                                 substitute(all_pages[i], "<<~~JS~~>>","../js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","../css/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","")
+                        }
+                }
+
+        }
+
+        // give an overview of rendered pages and blogs and draft pages and blogs
+        if len(draft_pages) != 0 {
+                fmt.Println ("Draft pages were not rendered.")
+        }
+        // fmt.Println("The following pages were rendered: ")
+        
+        // for i := 0; i < len (all_pages); i++ {
+        //         fmt.Println(all_pages[i])
+        //         }
+
+        // if len(draft_pages) != 0 {
+        //         fmt.Println("The following pages are still in draft and were not rendered: ")
+        //         for i := 0; i < len (draft_pages); i++ {
+        //                 fmt.Println(draft_pages[i])
+        //         }
+        // }
+}
+
+func (site Site) addLangLinks (pages []string, language string) {
+        
+        all_pages, _ := definePages(pages)
+
+        for i := 0; i < len(all_pages); i++ {
+
+                pagename := strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1]
+                
+                for j := 0; j < len(site.languages); j++ {
+                        if language != site.languages[j] {
                                 
-                                copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1])
+                                inject_nav_items(all_pages[i], "<<~~LANGLIST~~>>", site.templatedir+"/"+language+"/langbar_item.html")
+                                
+                                if Contains(pagesAllLang, "temp/pages/"+site.languages[j]+"/"+pagename) == true && pagename == "index.html" && language != site.primaryLang && site.languages[j] == site.primaryLang {
+                                        substitute(all_pages[i], "<<~~LANGLINK~~>>", "../../"+pagename)
+                                        substitute(all_pages[i], "<<~~LANGITEM~~>>", site.languages[j])
+                                } else if Contains(pagesAllLang, "temp/pages/"+site.languages[j]+"/"+pagename) == true && pagename == "index.html" && language == site.primaryLang && site.languages[j] != site.primaryLang {
+                                        substitute(all_pages[i], "<<~~LANGLINK~~>>", site.pagedir+"/"+site.languages[j]+"/"+pagename)
+                                        substitute(all_pages[i], "<<~~LANGITEM~~>>", site.languages[j])
+                                } else if Contains(pagesAllLang, "temp/pages/"+site.languages[j]+"/"+pagename) == true {
+                                        substitute(all_pages[i], "<<~~LANGLINK~~>>", "../"+site.languages[j]+"/"+pagename)
+                                        substitute(all_pages[i], "<<~~LANGITEM~~>>", site.languages[j])
+                                } else {
+                                        substitute(all_pages[i], "<<~~LANGLINK~~>>", "../"+site.languages[j]+"/index.html")
+                                        substitute(all_pages[i], "<<~~LANGITEM~~>>", site.languages[j])
+                                }
                         }
                 }
                 
+                substitute(all_pages[i], "<<~~LANGLIST~~>>","")
+        }
+}
+
+func (site Site) copyRenderedPages(pages []string, language string) {
+        
+        all_pages, _ := definePages(pages)
+
+        // copy files
+        
+        for i := 0; i < len(all_pages); i++ {
+                
+                // Remove the stare header before copying to the rendered folder
+        
                 remove_header(all_pages[i])
                 
                 // Copy files to the correct location
-                
+        
                 if (site.multiLang == true && language == site.primaryLang) || site.multiLang == false {
                         if strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1] == "index.html" {
                                 copyfile(all_pages[i], "rendered/"+strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1])
@@ -170,21 +220,6 @@ func (site Site) renderPages(pages []string, language string) {
                         }
                 } else {
                         copyfile(all_pages[i], "rendered/"+site.pagedir+"/"+language+"/"+strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1])
-                }
-        }
-
-        // give an overview of rendered pages and blogs and draft pages and blogs
-
-        fmt.Println("The following pages were rendered: ")
-        
-        for i := 0; i < len (all_pages); i++ {
-                fmt.Println(all_pages[i])
-                }
-
-        if len(draft_pages) != 0 {
-                fmt.Println("The following pages are still in draft and were not rendered: ")
-                for i := 0; i < len (draft_pages); i++ {
-                        fmt.Println(draft_pages[i])
                 }
         }
 }
@@ -209,19 +244,22 @@ func (site Site) renderBlogs(blogs []string, pages []string) {
         // - sorting on date
         //
         
+        if len(draft_blogs) != 0 && len(all_blogs) == 0 { // remove && len(all_blogs) == 0; only added to keep allblogs definition 
+                fmt.Println("Draft blog posts were not rendered.")
+        }
 
-        fmt.Println("The following blog posts were rendered: ")
+        // fmt.Println("The following blog posts were rendered: ")
         
-        for i := 0; i < len(all_blogs); i++ {
-                fmt.Println(all_blogs[i])
-        }
+        // for i := 0; i < len(all_blogs); i++ {
+        //         fmt.Println(all_blogs[i])
+        // }
         
-        if len(draft_blogs) != 0 {
-                fmt.Println("The following blog posts are still in draft and were not rendered: ")
-                for i := 0; i < len (draft_blogs); i++ {
-                        fmt.Println(draft_blogs[i])
-                }
-        }
+        // if len(draft_blogs) != 0 {
+        //         fmt.Println("The following blog posts are still in draft and were not rendered: ")
+        //         for i := 0; i < len (draft_blogs); i++ {
+        //                 fmt.Println(draft_blogs[i])
+        //         }
+        // }
 }
 
 func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language string) {
@@ -496,7 +534,8 @@ func create_navbar (page string, language string, menu map[int64]string, menuNam
                                         substitute(page, "<<~~NAVLINK~~>>",page_link)
                                 }
                         }
-                                
+                        
+       
                         
                         substitute(page, "<<~~NAVITEM~~>>",page_name)
                 }
@@ -505,22 +544,23 @@ func create_navbar (page string, language string, menu map[int64]string, menuNam
 }
 
 func inject_nav_items (file, tie, html_source_file string) {
+        
         input, err := ioutil.ReadFile(file)
         if err != nil {
                 log.Fatalln(err)
         }
 
         lines := strings.Split(string(input), "\n")
-        
+
         html_input, err := ioutil.ReadFile(html_source_file)
         if err != nil {
                 log.Fatalln(err)
         }
         
         s := string(html_input)
-        
+
         for line := range lines {
-                lines[line] = strings.Replace(lines[line], tie, s+"\n<<~~NAVLIST~~>>", -1)
+                lines[line] = strings.Replace(lines[line], tie, s+"\n"+tie, -1)
                 /*lines[line] = strings.Replace(lines[line], tie, s, -1)*/
         }
         
@@ -615,6 +655,7 @@ func definePages (fileList []string) ([]string, []string) {
                 for j := 1; j < 6; j++  {
                         if strings.Contains(lines[j], "posted") == true {
                                 all_pages = append(all_pages, fileList[i])
+                                pagesAllLang = append(pagesAllLang, fileList[i])
                         } 
                         if strings.Contains(lines[j], "in_draft") == true {
                                 draft_pages = append(draft_pages, fileList[i])
@@ -675,6 +716,11 @@ func defineGalleries (galleryDirs []os.FileInfo) ([]string, []string) {
         return all_galleries, all_galleries_name
 }
 
+func Contains(list []string, elem string) bool { 
+        for _, t := range list { if t == elem { return true } } 
+        return false 
+} 
+
 func render_site() {
 
         fmt.Println("Rendering!")
@@ -688,6 +734,7 @@ func render_site() {
                 dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
                 
                 site.renderPages(pages, "")
+                site.copyRenderedPages(pages, "")
                 site.renderBlogs(blogs, pages)
                 site.renderGalleries(dirs, pages, "")
         } else {
@@ -700,8 +747,15 @@ func render_site() {
                         //dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
                         
                         site.renderPages(pages, site.languages[i])
+                        
                         site.renderBlogs(blogs, pages)
                         //site.renderGalleries(dirs, pages, site.languages[i])
+                }
+                
+                for i := 0; i < len(site.languages); i++ {
+                        pages, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.languages[i]+"/*.html")
+                        site.addLangLinks(pages, site.languages[i])
+                        site.copyRenderedPages(pages, site.languages[i])
                 }
         }
 
