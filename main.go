@@ -70,25 +70,32 @@ func main() {
 	pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
 	blogUnpostFlag := unpostCommand.String("blog", "", "Name of the page to be unposted.")
 
+	updateCommand := flag.NewFlagSet("update", flag.ExitOnError)
+	languageAddFlag := updateCommand.String("addlang", "", "Name of the language to be added.")
+	languageMigFlag := updateCommand.String("miglang", "", "Migrate to a multilanguage site. Provide the primary language as a parameter.")
+
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
 		fmt.Println("The most commonly used stare commands are: \n")
-		fmt.Println(" render      Renders the website.\n")
-		fmt.Println(" list        Lists all pages, blog posts and galleries.\n")
+		fmt.Println(" render        Renders the website.\n")
+		fmt.Println(" list          Lists all pages, blog posts and galleries.\n")
 		fmt.Println(" create")
-		fmt.Println("   -page     Creates a new page")
-		fmt.Println("   -gallery  Create a new gallery")
-		fmt.Println("   -blog     Create a new blog post\n")
+		fmt.Println("   -page       Creates a new page")
+		fmt.Println("   -gallery    Create a new gallery")
+		fmt.Println("   -blog       Create a new blog post\n")
 		fmt.Println(" post")
-		fmt.Println("   -page     Posts a page")
-		fmt.Println("   -blog     Posts a blog post\n")
+		fmt.Println("   -page       Posts a page")
+		fmt.Println("   -blog       Posts a blog post\n")
 		fmt.Println(" unpost")
-		fmt.Println("   -page     Unposts a page")
-		fmt.Println("   -blog     Unposts a blog post\n")
+		fmt.Println("   -page       Unposts a page")
+		fmt.Println("   -blog       Unposts a blog post\n")
 		fmt.Println(" archive")
-		fmt.Println("   -page     Archives a page")
-		fmt.Println("   -gallery  Archives a gallery")
-		fmt.Println("   -blog     Archives a blog post\n")
+		fmt.Println("   -page       Archives a page")
+		fmt.Println("   -gallery    Archives a gallery")
+		fmt.Println("   -blog       Archives a blog post\n")
+		fmt.Println(" update")
+		fmt.Println("   -miglang    Migrate to a multilanguage site")
+		fmt.Println("   -addlang    Adds a language\n")
 		return
 	}
 
@@ -105,6 +112,8 @@ func main() {
 		postCommand.Parse(os.Args[2:])
 	case "unpost":
 		unpostCommand.Parse(os.Args[2:])
+	case "update":
+		updateCommand.Parse(os.Args[2:])
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
@@ -152,6 +161,23 @@ func main() {
 			unpost(*pageUnpostFlag, "pages/")
 		} else if *blogUnpostFlag != "" {
 			unpost(*blogUnpostFlag, "pages/blogs/")
+		}
+	}
+
+	if updateCommand.Parsed() {
+		if *languageAddFlag == "" && *languageMigFlag == "" {
+			fmt.Println("  -addlang string")
+        	fmt.Println("	Name of the language to be added.")
+  			fmt.Println("  -miglang string")
+        	fmt.Println("	Migrate to a multilanguage site. Provide the primary language as a parameter.")
+		} else if *languageAddFlag != "" && site.multiLang != true {
+			fmt.Println ("Site is not a multilanguage site. Please first migrate the site to a multilanguage site using the 'stare update -miglang <string>' command.")
+		} else if *languageMigFlag != "" && site.multiLang == true{
+			fmt.Println ("Site is already a multilanguage site.")
+		} else if *languageAddFlag != "" && site.multiLang == true {
+			addLanguage(*languageAddFlag)
+		} else if *languageMigFlag != "" && site.multiLang != true{
+			migLanguage(*languageMigFlag)
 		}
 	}
 
