@@ -1,28 +1,7 @@
-LANGUAGE SUPPORT
+BLOG POSTS
 
-ini file to define languages
-- multiple_language_support : y/n
-- primary language : xx, xxxxx (where xx = language code and xxxxx = full language name)
-- secondary language : xx, xxxxx (where xx = language code and xxxxx = full language name)
-- secondary language : xx, xxxxx (where xx = language code and xxxxx = full language name)
-DONE
-
-pages in language: xx/pages (where xx = language code)
-DONE
-
-menu per language!
-menu has language shortcuts on the right side (select?)
-
-create -> makes pages in all languages
-DONE
-archive ->  archives pages per language
-DONE
-post -> per language
-DONE
-
-Language link on page must go to the same translated page, not language homepage
-
-Blog post creation : always per language??
-
-https://help.localizejs.com/docs/detecting-language-of-a-visitor
-https://www.w3.org/International/questions/qa-navigation-select
+what do we want:
+  - chronological page
+  - only titles
+  - x amount of posts or titles
+  - taxonomy
