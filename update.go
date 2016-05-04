@@ -16,21 +16,41 @@ package main
 
 import (
     "fmt"
-    //"os"
-    //"path/filepath"
+    "path/filepath"
+    //"github.com/go-ini/ini"
+    "os"
     //"strconv"
-    //"strings"
+    "strings"
 )
 
 func addLanguage (language string) {
-    fmt.Println ("Adding!")
-    
+
     // TODO
     //
     // 1. Create folder 'language' under site.pagedir
     // 2. Edit config.ini: 
     //      - add the provided string to the key languages
     
+    path := filepath.Join(site.pagedir, language)
+    // err := 
+    os.MkdirAll (path, 0755)
+    // if err != nil {
+    //     return err
+    // }
+    var inilang string
+    
+    for lang := 0; lang < len(site.languages); lang++ {
+        if lang == 0 {
+            inilang = site.languages[lang]
+        } else {
+            inilang = inilang + ", " + site.languages[lang]
+        }
+    }
+    
+    inilang = inilang + ", " + language
+    
+    cfg.Section("general").NewKey("languages", inilang)
+    cfg.SaveTo("config.ini")
 }
 
 func migLanguage (language string) {
@@ -44,5 +64,21 @@ func migLanguage (language string) {
     //      - create key primary_language and complete with the provided string 
     //      - create key languages and add the provided string
     
+    path := filepath.Join(site.pagedir, language)
+    // err := 
+    os.MkdirAll (path, 0755)
+    // if err != nil {
+    //     return err
+    // }
+    pages, _ := filepath.Glob(site.pagedir+"/*.html")
+    fmt.Println(pages)
+    for c := 1; c < len(pages); c++ {
+        copyfile (pages[c], filepath.Join(path, strings.Split(pages[c], "/")[len(strings.Split(pages[c], "/"))-1]))
+        move(pages[c], filepath.Join("archive",pages[c]))
+    }
     
+    cfg.Section("general").NewKey("multiple_language_support", "y")
+    cfg.Section("general").NewKey("primary_language", language)
+    cfg.Section("general").NewKey("languages", language)
+    cfg.SaveTo("config.ini")    
 }
