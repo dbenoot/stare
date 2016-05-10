@@ -32,7 +32,7 @@ func post (name string, path string) {
     items, _ := filepath.Glob(path+"*"+name+"*")
 
     // Select the correct blog post by assigning the correct itemId
-    // If only 1 item is applicable, set the itenId
+    // If only 1 item is applicable, set the itemId
     // If more than 1 item is applicable, ask which item is applicable and set the itemId
 
     if len(items) == 1 {
@@ -42,7 +42,7 @@ func post (name string, path string) {
         for i := 0; i < len(items); i++ {
             fmt.Println(strconv.Itoa(i) + " - "+items[i])
         }
-        fmt.Println("Which blog post should be posted?")
+        fmt.Println("Which item should be posted?")
         if _, err := fmt.Scanf("%d", &itemId); err != nil {
             fmt.Printf("%s\n", err)
         }
@@ -51,7 +51,7 @@ func post (name string, path string) {
     // Check that the blogId can exist and post the correct blogId
     
     if itemId >= len(items) {
-        fmt.Println("Blog post does not exist.")
+        fmt.Println("Item does not exist.")
     } else {
         filename := strings.Split(items[itemId],"/")[len(strings.Split(items[itemId],"/"))-1]
         fmt.Println("Posting ", filename)
@@ -75,7 +75,7 @@ func unpost (name string, path string) {
         for i := 0; i < len(items); i++ {
             fmt.Println(strconv.Itoa(i) + " - "+items[i])
         }
-        fmt.Println("Which blog post should be posted?")
+        fmt.Println("Which item should be posted?")
         if _, err := fmt.Scanf("%d", &itemId); err != nil {
             fmt.Printf("%s\n", err)
         }
@@ -84,7 +84,7 @@ func unpost (name string, path string) {
     // Check that the blogId can exist and post the correct blogId
     
     if itemId >= len(items) {
-        fmt.Println("Blog post does not exist.")
+        fmt.Println("Item does not exist.")
     } else {
         filename := strings.Split(items[itemId],"/")[len(strings.Split(items[itemId],"/"))-1]
         fmt.Println("Unposting ", filename)
