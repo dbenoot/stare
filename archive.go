@@ -36,14 +36,14 @@ func archive_page(pagename string) {
         pagename = strings.Split(pagename, "/")[1]
     }
     
-    path := "archive" + string(filepath.Separator)+ language + string(filepath.Separator) + "pages" + string(filepath.Separator)
+    path := filepath.Join("archive", language, "pages")
     fmt.Println(path)
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
     }
     
-    move("pages" + string(filepath.Separator) + language + string(filepath.Separator) + pagename+".html", path + pagename + ".html")
+    move(filepath.Join("pages", language) +"/"+ pagename + ".html", path +"/"+ pagename + ".html")
 }
 
 func archive_blog(blogname string) {

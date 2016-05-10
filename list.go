@@ -30,7 +30,7 @@ func sourcelist() {
     fmt.Println("PAGES")
     j = 1
     if site.multiLang == true {
-        for i := 0; i < len(site.languages); i++ {
+        for i := 1; i <= len(site.languages); i++ {
             list("pages/"+site.languages[i]+"/*.html")
         }
     } else {
