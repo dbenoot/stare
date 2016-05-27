@@ -21,7 +21,6 @@ package main
 import (
     "path/filepath"
     "fmt"
-    "strconv"
     "strings"
     )
 
@@ -31,31 +30,14 @@ func post (name string, path string) {
     
     items, _ := filepath.Glob(path+"*"+name+"*")
 
-    // Select the correct blog post by assigning the correct itemId
-    // If only 1 item is applicable, set the itemId
-    // If more than 1 item is applicable, ask which item is applicable and set the itemId
+    // Select the correct item in case of name ambiguity
 
-    if len(items) == 1 {
-        itemId = 0
-    } else {
+    item := findItem(items)
     
-        for i := 0; i < len(items); i++ {
-            fmt.Println(strconv.Itoa(i) + " - "+items[i])
-        }
-        fmt.Println("Which item should be posted?")
-        if _, err := fmt.Scanf("%d", &itemId); err != nil {
-            fmt.Printf("%s\n", err)
-        }
-    }
-    
-    // Check that the blogId can exist and post the correct blogId
-    
-    if itemId >= len(items) {
-        fmt.Println("Item does not exist.")
-    } else {
-        filename := strings.Split(items[itemId],"/")[len(strings.Split(items[itemId],"/"))-1]
-        fmt.Println("Posting ", filename)
-        substitute_in_header(items[itemId], "in_draft", "posted")
+    if len(item) > 0 {
+        filename := strings.Split(item,"/")[len(strings.Split(item,"/"))-1]
+        fmt.Println("Posting", filename)
+        substitute_in_header(item, "in_draft", "posted")
     }
     
 }
@@ -64,30 +46,13 @@ func unpost (name string, path string) {
     
     items, _ := filepath.Glob(path+"*"+name+"*")
 
-    // Select the correct blog post by assigning the correct itemId
-    // If only 1 item is applicable, set the itenId
-    // If more than 1 item is applicable, ask which item is applicable and set the itemId
-
-    if len(items) == 1 {
-        itemId = 0
-    } else {
+    // Select the correct item in case of name ambiguity
     
-        for i := 0; i < len(items); i++ {
-            fmt.Println(strconv.Itoa(i) + " - "+items[i])
-        }
-        fmt.Println("Which item should be posted?")
-        if _, err := fmt.Scanf("%d", &itemId); err != nil {
-            fmt.Printf("%s\n", err)
-        }
-    }
+    item := findItem(items)
     
-    // Check that the blogId can exist and post the correct blogId
-    
-    if itemId >= len(items) {
-        fmt.Println("Item does not exist.")
-    } else {
-        filename := strings.Split(items[itemId],"/")[len(strings.Split(items[itemId],"/"))-1]
-        fmt.Println("Unposting ", filename)
-        substitute_in_header(items[itemId], "posted", "in_draft")
+    if len(item) > 0 {
+        filename := strings.Split(item,"/")[len(strings.Split(item,"/"))-1]
+        fmt.Println("Unposting", filename)
+        substitute_in_header(item, "posted", "in_draft")
     }
 }

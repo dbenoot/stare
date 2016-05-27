@@ -25,6 +25,7 @@ import (
     "log"
     "strings"
     "io/ioutil"
+    "strconv"
     )
     
 func move (inputname, outputname string) {
@@ -143,4 +144,31 @@ func substitute_in_header (file, tie, replacetext string) {
         if err != nil {
                 log.Fatalln(err)
         } 
+}
+
+func findItem (items []string) (item string) {
+    
+    var itemId int
+    
+    if len(items) == 1 {
+        itemId = 0
+    } else {
+    
+        for i := 0; i < len(items); i++ {
+            fmt.Println(strconv.Itoa(i) + " - "+items[i])
+        }
+        fmt.Println("Select the correct item:")
+        if _, err := fmt.Scanf("%d", &itemId); err != nil {
+            fmt.Printf("%s\n", err)
+        }
+    }
+    
+    if itemId >= len(items) {
+        fmt.Println("Item does not exist.")
+        return
+    } else {
+        return items[itemId]
+    }
+    
+    return
 }

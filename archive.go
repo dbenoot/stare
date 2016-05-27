@@ -22,12 +22,12 @@ import (
     "fmt"
     "os"
     "path/filepath"
-    "strconv"
     "strings"
 )
 
 func archive_page(pagename string) {
-    fmt.Println("Archiving page " + pagename)
+    
+    fmt.Println(pagename)
     
     var language string
     
@@ -37,18 +37,29 @@ func archive_page(pagename string) {
     }
     
     path := filepath.Join("archive", language, "pages")
-    fmt.Println(path)
+
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
     }
     
-    move(filepath.Join("pages", language) +"/"+ pagename + ".html", path +"/"+ pagename + ".html")
+    pages, _ := filepath.Glob(site.pagedir+"/"+pagename+"*") 
+    
+    page := findItem(pages)
+    
+    if len(page) > 0 {
+        filename := strings.Split(page,"/")[len(strings.Split(page,"/"))-1]
+        fmt.Println("Archiving page", filename)
+        move(page, "archive/pages/"+language+"/"+filename)
+    }
+    
+    // fmt.Println("Archiving page " + pagename)
+    // move(filepath.Join("pages", language) +"/"+ pagename + ".html", path +"/"+ pagename + ".html")
 }
 
 func archive_blog(blogname string) {
     
-    var blogId int
+    // var blogId int
     var language string
     
     // Check whether the path exists and create if necessary
@@ -70,31 +81,14 @@ func archive_blog(blogname string) {
     
     blogposts, _ := filepath.Glob("pages/"+language+"/blogs/"+blogname+"*")
 
-    // Select the correct blog post by assigning the correct blogId
-    // If only 1 post is applicable, set the blogId
-    // If more than 1 post is applicable, ask which post is applicable and set the blogId
-
-    if len(blogposts) == 1 {
-        blogId = 0
-    } else {
+    // Select the correct blog in case of name ambiguity
     
-        for i := 0; i < len(blogposts); i++ {
-            fmt.Println(strconv.Itoa(i) + " - "+blogposts[i])
-        }
-        fmt.Println("Which blog post should be archived?")
-        if _, err := fmt.Scanf("%d", &blogId); err != nil {
-            fmt.Printf("%s\n", err)
-        }
-    }
+    blogpost := findItem(blogposts)
     
-    // Check that the blogId can exist and archive the correct blogId
-    
-    if blogId >= len(blogposts) {
-        fmt.Println("Blog post does not exist.")
-    } else {
-        filename := strings.Split(blogposts[blogId],"/")[len(strings.Split(blogposts[blogId],"/"))-1]
-        fmt.Println("Archiving blog post ", filename)
-        move(blogposts[blogId], "archive/pages/"+language+"/blogs/"+filename)
+    if len(blogpost) > 0 {
+        filename := strings.Split(blogpost,"/")[len(strings.Split(blogpost,"/"))-1]
+        fmt.Println("Archiving blog post", filename)
+        move(blogpost, "archive/pages/"+language+"/blogs/"+filename)
     }
 }
 
@@ -109,4 +103,3 @@ func archive_gallery(galleryname string) {
 
     move("gallery" + string(filepath.Separator) + galleryname, path + galleryname)
 }
-
