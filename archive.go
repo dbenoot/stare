@@ -13,8 +13,11 @@
 //   limitations under the License.
 
 
-// This file contains the functions for archiving web pages and galleries
+// This file contains the functions for archiving and unarchiving web pages and galleries
 
+// TODO
+//
+// - archiving and unarchiving galleries
 
 package main
 
@@ -26,8 +29,6 @@ import (
 )
 
 func archive_page(pagename string) {
-    
-    fmt.Println(pagename)
     
     var language string
     
@@ -53,25 +54,44 @@ func archive_page(pagename string) {
         move(page, "archive/pages/"+language+"/"+filename)
     }
     
-    // fmt.Println("Archiving page " + pagename)
-    // move(filepath.Join("pages", language) +"/"+ pagename + ".html", path +"/"+ pagename + ".html")
+}
+
+func unarchive_page(pagename string) {
+    
+    var language string
+    
+    if site.multiLang == true {
+        language = strings.Split(pagename, "/")[0]
+        pagename = strings.Split(pagename, "/")[1]
+    }
+    
+    path := filepath.Join("archive", language, "pages")
+
+    pages, _ := filepath.Glob(path+"/"+pagename+"*") 
+    
+    page := findItem(pages)
+    
+    if len(page) > 0 {
+        filename := strings.Split(page,"/")[len(strings.Split(page,"/"))-1]
+        fmt.Println("Unarchiving page", filename)
+        move(page, "pages/"+language+"/"+filename)
+    }  
+    
 }
 
 func archive_blog(blogname string) {
     
-    // var blogId int
     var language string
-    
-    // Check whether the path exists and create if necessary
-    
-     if site.multiLang == true {
+
+    if site.multiLang == true {
         language = strings.Split(blogname, "/")[0]
         blogname = strings.Split(blogname, "/")[1]
     }   
     
+    // Check whether the path exists and create if necessary
+    
     path := "archive/pages/"+language+"/blogs/"
-    
-    
+
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
@@ -90,10 +110,39 @@ func archive_blog(blogname string) {
         fmt.Println("Archiving blog post", filename)
         move(blogpost, "archive/pages/"+language+"/blogs/"+filename)
     }
+    
+}
+
+func unarchive_blog(blogname string) {
+
+    var language string
+
+    if site.multiLang == true {
+        language = strings.Split(blogname, "/")[0]
+        blogname = strings.Split(blogname, "/")[1]
+    }   
+    
+    // Check whether the path exists and create if necessary
+    
+    path := "archive/pages/"+language+"/blogs/"
+
+    // Read all blog posts which contain the entered string
+    
+    blogposts, _ := filepath.Glob(path+blogname+"*")
+
+    // Select the correct blog in case of name ambiguity
+    
+    blogpost := findItem(blogposts)
+    
+    if len(blogpost) > 0 {
+        filename := strings.Split(blogpost,"/")[len(strings.Split(blogpost,"/"))-1]
+        fmt.Println("Unarchiving blog post", filename)
+        move(blogpost, "pages/"+language+"/blogs/"+filename)
+    }
+    
 }
 
 func archive_gallery(galleryname string) {
-    fmt.Println("Archiving gallery ", galleryname)
     
     path := "archive" + string(filepath.Separator) + "gallery" + string(filepath.Separator)
     _, err := os.Stat(path) 
@@ -101,5 +150,19 @@ func archive_gallery(galleryname string) {
         os.MkdirAll(path, 0755)
     }
 
-    move("gallery" + string(filepath.Separator) + galleryname, path + galleryname)
+    fmt.Println("Archiving gallery", galleryname)
+
+    copydir("gallery" + string(filepath.Separator) + galleryname, path + galleryname)
+}
+
+func unarchive_gallery(galleryname string) {
+    path := "archive" + string(filepath.Separator) + "gallery" + string(filepath.Separator)
+    _, err := os.Stat(path) 
+    if err != nil {
+        os.MkdirAll(path, 0755)
+    }
+
+    fmt.Println("Archiving gallery", galleryname)
+
+    copydir(path + galleryname, "gallery" + string(filepath.Separator) + galleryname)
 }

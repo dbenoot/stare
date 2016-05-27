@@ -62,6 +62,11 @@ func main() {
 	gallerypageArchiveFlag := archiveCommand.String("gallery", "", "Name of the gallery to be archived.")
 	blogArchiveFlag := archiveCommand.String("blog", "", "Name of the blog post to be archived.")
 
+	unarchiveCommand := flag.NewFlagSet("unarchive", flag.ExitOnError)
+	pageUnarchiveFlag := unarchiveCommand.String("page", "", "Name of the page to be unarchived.")
+	gallerypageUnarchiveFlag := unarchiveCommand.String("gallery", "", "Name of the gallery to be unarchived.")
+	blogUnarchiveFlag := unarchiveCommand.String("blog", "", "Name of the blog post to be unarchived.")
+
 	postCommand := flag.NewFlagSet("post", flag.ExitOnError)
 	pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
 	blogPostFlag := postCommand.String("blog", "", "Name of the page to be posted.")
@@ -93,6 +98,10 @@ func main() {
 		fmt.Println("   -page       Archives a page")
 		fmt.Println("   -gallery    Archives a gallery")
 		fmt.Println("   -blog       Archives a blog post\n")
+		fmt.Println(" unarchive")
+		fmt.Println("   -page       Unarchives a page")
+		fmt.Println("   -gallery    Unarchives a gallery")
+		fmt.Println("   -blog       Unarchives a blog post\n")
 		fmt.Println(" update")
 		fmt.Println("   -miglang    Migrate to a multilanguage site")
 		fmt.Println("   -addlang    Adds a language\n")
@@ -106,6 +115,8 @@ func main() {
 		createCommand.Parse(os.Args[2:])
 	case "archive":
 		archiveCommand.Parse(os.Args[2:])
+	case "unarchive":
+		unarchiveCommand.Parse(os.Args[2:])
 	case "list":
 	    sourcelist()
 	case "post":
@@ -134,13 +145,25 @@ func main() {
 
 	if archiveCommand.Parsed() {
 		if *pageArchiveFlag == "" && *gallerypageArchiveFlag == "" && *blogArchiveFlag == ""{
-			fmt.Println("Please provide the page name using -page option or the gallery name using -gallery.")
+			fmt.Println("Please provide the page, blog or gallery name using -page, -blog or -gallery option.")
 		} else if *pageArchiveFlag != "" {
             archive_page(*pageArchiveFlag)
         } else if *gallerypageArchiveFlag != "" {
             archive_gallery(*gallerypageArchiveFlag)
         } else if *blogArchiveFlag != "" {
             archive_blog(*blogArchiveFlag)
+        }
+	}
+
+	if unarchiveCommand.Parsed() {
+		if *pageUnarchiveFlag == "" && *gallerypageUnarchiveFlag == "" && *blogUnarchiveFlag == ""{
+			fmt.Println("Please provide the page, blog or gallery name using -page, -blog or -gallery option.")
+		} else if *pageUnarchiveFlag != "" {
+            unarchive_page(*pageUnarchiveFlag)
+        } else if *gallerypageUnarchiveFlag != "" {
+            unarchive_gallery(*gallerypageUnarchiveFlag)
+        } else if *blogUnarchiveFlag != "" {
+            unarchive_blog(*blogUnarchiveFlag)
         }
 	}
 	
