@@ -32,11 +32,19 @@ func addLanguage (language string) {
     //      - add the provided string to the key languages
     
     path := filepath.Join(site.pagedir, language)
+    templatepath := filepath.Join(site.templatedir , language)
     // err := 
     os.MkdirAll (path, 0755)
+    os.MkdirAll (templatepath, 0755)
     // if err != nil {
     //     return err
     // }
+    
+    templates, _ := filepath.Glob(filepath.Join(site.templatedir,site.primaryLang,"/*.html"))
+    for c := 0; c < len(templates); c++ {
+        copyfile (templates[c], filepath.Join(templatepath, strings.Split(templates[c], "/")[len(strings.Split(templates[c], "/"))-1]))
+    }
+    
     var inilang string
     
     for lang := 0; lang < len(site.languages); lang++ {
@@ -56,25 +64,24 @@ func addLanguage (language string) {
 func migLanguage (language string) {
     fmt.Println ("Migrating!")
     
-    // TODO
-    //
-    // 1. Create folder 'language' under site.pagedir and move all html files there
-    // 2. Edit config.ini: 
-    //      - update key multiple_language_support -> y
-    //      - create key primary_language and complete with the provided string 
-    //      - create key languages and add the provided string
-    
     path := filepath.Join(site.pagedir, language)
+    templatepath := filepath.Join(site.templatedir , language)
     // err := 
     os.MkdirAll (path, 0755)
+    os.MkdirAll (templatepath, 0755)
     // if err != nil {
     //     return err
     // }
     pages, _ := filepath.Glob(site.pagedir+"/*.html")
-    fmt.Println(pages)
     for c := 1; c < len(pages); c++ {
         copyfile (pages[c], filepath.Join(path, strings.Split(pages[c], "/")[len(strings.Split(pages[c], "/"))-1]))
         move(pages[c], filepath.Join("archive",pages[c]))
+    }
+    
+    templates, _ := filepath.Glob(site.templatedir+"/*.html")
+    for c := 0; c < len(templates); c++ {
+        copyfile (templates[c], filepath.Join(templatepath, strings.Split(templates[c], "/")[len(strings.Split(templates[c], "/"))-1]))
+        move(templates[c], filepath.Join("archive",templates[c]))
     }
     
     cfg.Section("general").NewKey("multiple_language_support", "y")

@@ -40,7 +40,8 @@ func (site Site) createFolder () {
         
         // Remove previous rendering of the site
 
-        os.RemoveAll(path.Join(wd, "rendered"))
+        RemoveContentsLeaveGit(path.Join(wd, "rendered"))
+        
         
         // Create directories for temporary files and newly rendered site
         
@@ -68,10 +69,27 @@ func (site Site) createFolder () {
 
 func (site Site) copySrc () {
         srcItems, _ := filepath.Glob(site.srcdir+"/*")
-        i := 0
-        for i < len(srcItems) {
-                copydir(srcItems[i], "rendered/"+strings.Split(srcItems[i], "/")[1])
-                i += 1
+
+        for i := 0; i < len(srcItems); i++ {
+                file, err := os.Open(srcItems[i])
+                if err != nil {
+                    // handle the error and return
+                }
+                defer file.Close()
+                
+                fi, err := file.Stat()
+                if err != nil {
+                    // handle the error and return
+                }
+                if fi.IsDir() {
+                    // it's a directory
+                    copydir(srcItems[i], "rendered/"+strings.Split(srcItems[i], "/")[1])
+                } else {
+                    // it's not a directory
+                    copyfile(srcItems[i], "rendered/"+strings.Split(srcItems[i], "/")[1])
+                    //fmt.Println("Reached this point - ", srcItems[i])
+                }
+
         }
 }
 
@@ -719,7 +737,28 @@ func defineGalleries (galleryDirs []os.FileInfo) ([]string, []string) {
 func Contains(list []string, elem string) bool { 
         for _, t := range list { if t == elem { return true } } 
         return false 
-} 
+}
+
+func RemoveContentsLeaveGit(dir string) error {
+    d, err := os.Open(dir)
+    if err != nil {
+        return err
+    }
+    defer d.Close()
+    names, err := d.Readdirnames(-1)
+    if err != nil {
+        return err
+    }
+    for _, name := range names {
+        if name != ".git" {
+                err = os.RemoveAll(filepath.Join(dir, name))
+        }
+        if err != nil {
+            return err
+        }
+    }
+    return nil
+}
 
 func render_site() {
 
@@ -761,5 +800,5 @@ func render_site() {
 
         // Remove the temporary files 
         
-        //os.RemoveAll(path.Join(wd, "temp"))
+        os.RemoveAll(path.Join(wd, "temp"))
 }
