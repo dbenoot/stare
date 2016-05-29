@@ -6,3 +6,14 @@ what do we want:
   - only linked titles
   - x amount of posts or titles
   - taxonomy
+  
+semantics
+in page
+<<~~BLOG:POSTS:X~~>>
+<<~~BLOG:TITLES:X~~>>
+
+in template blogpost
+<<~~BLOGPOST:TITLE~~>>
+<<~~BLOGPOST:AUTHOR~~>>
+<<~~BLOGPOST:TIME~~>>
+<<~~BLOGPOST:CONTENT~~>>

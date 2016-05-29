@@ -75,8 +75,9 @@ func createPage (pagename string, languagedir string) {
 }
 
 func createBlog (blogName string, languagedir string) {
+    
     if _, err := os.Stat("pages/"+languagedir+"/blogs/"); os.IsNotExist(err) {
-        os.MkdirAll("pages/"+languagedir+"/blogs/", 0755)
+        os.MkdirAll(filepath.Join("pages",languagedir,"blogs"), 0755)
     }
     
     filename := blogName+" - "+now+".md"
@@ -85,9 +86,10 @@ func createBlog (blogName string, languagedir string) {
     
     prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+languagedir+"/blogs/"+filename)
     prepend("taxonomies      : ", "pages/"+languagedir+"/blogs/"+filename)
-    prepend("created by      :", "pages/"+languagedir+"/blogs/"+filename)
-    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/"+languagedir+"/blogs/"+filename)
-
+    prepend("created by      : ", "pages/"+languagedir+"/blogs/"+filename)
+    prepend("created on      : "+now, "pages/"+languagedir+"/blogs/"+filename)
+    prepend("title           : ", "pages/"+languagedir+"/blogs/"+filename)
+    prepend("------------------------------------------------------------------------", "pages/"+languagedir+"/blogs/"+filename)
 }
 
 func create_page (pageName string) {

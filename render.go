@@ -112,14 +112,16 @@ func (site Site) copyFiles () {
         copyfile(site.templatedir+"/navbar_template.html", "temp/navbar.html")
 }
 
-func (site Site) renderPages(pages []string, language string) {
+func (site Site) renderPages(pages []string, blogs []string, language string) {
 
         // complete menu and menuName
         // define posted and draft pages
 
         menu, menuName := createMenu(pages, language)
         all_pages, draft_pages := definePages(pages)
-
+        
+        site.processBlogs(blogs)
+        
         // add navbar to the pages and resolve the ties NAVACTIVE, NAVLINK, NAVITEM
         // cycling through all posted pages, then cycling through all menu items
         // adding navlinks as necessary and resolving the ties
@@ -242,13 +244,19 @@ func (site Site) copyRenderedPages(pages []string, language string) {
         }
 }
 
-func (site Site) renderBlogs(blogs []string, pages []string) {
+func (site Site) processBlogs(blogs []string) {
         
         // create menu items for the navbar
         // define posted and draft blogs
         
         //menu, menuName := createMenu(pages)
-        all_blogs, draft_blogs := defineBlogs(blogs)
+        posted_blogs, draft_blogs := defineBlogs(blogs)
+        author, title, time, filename := dissectBlogs(posted_blogs)
+        
+        fmt.Println ("author:", author)
+        fmt.Println ("title:", title)
+        fmt.Println ("time:", time)
+        fmt.Println ("filename:", filename)
         
         // RENDER BLOG POSTS
         //
@@ -262,9 +270,11 @@ func (site Site) renderBlogs(blogs []string, pages []string) {
         // - sorting on date
         //
         
-        if len(draft_blogs) != 0 && len(all_blogs) == 0 { // remove && len(all_blogs) == 0; only added to keep allblogs definition 
+        if len(draft_blogs) != 0 && len(posted_blogs) == 0 { // remove && len(all_blogs) == 0; only added to keep allblogs definition 
                 fmt.Println("Draft blog posts were not rendered.")
         }
+
+        fmt.Println(posted_blogs)
 
         // fmt.Println("The following blog posts were rendered: ")
         
@@ -685,7 +695,7 @@ func definePages (fileList []string) ([]string, []string) {
 
 func defineBlogs (fileList []string) ([]string, []string) {
         
-        all_blogs := []string{}
+        posted_blogs := []string{}
         draft_blogs := []string{}
         // all_blogs_taxonomy := make(map[string]string)
         
@@ -703,7 +713,7 @@ func defineBlogs (fileList []string) ([]string, []string) {
                 
                 for j := 1; j < 6; j++  {
                         if strings.Contains(lines[j], "posted") == true {
-                                all_blogs = append(all_blogs, fileList[i])
+                                posted_blogs = append(posted_blogs, fileList[i])
                         } 
                         if strings.Contains(lines[j], "in_draft") == true {
                                 draft_blogs = append(draft_blogs, fileList[i])
@@ -711,7 +721,44 @@ func defineBlogs (fileList []string) ([]string, []string) {
                 }
         }
         
-        return all_blogs, draft_blogs
+        return posted_blogs, draft_blogs
+}
+
+func dissectBlogs (posted_blogs []string) (map[int]string, map[int]string, map[int]string, map[int]string) {
+        
+        author := make(map[int]string)
+        title := make(map[int]string)
+        time := make(map[int]string)
+        filename := make(map[int]string)
+        
+        // Read pages
+
+        for i := 0; i < len(posted_blogs); i++ {
+        
+                input, err := ioutil.ReadFile(posted_blogs[i])
+                if err != nil {
+                        log.Fatalln(err)
+                }
+        
+                lines := strings.Split(string(input), "\n")
+                
+                filename[i] = posted_blogs[i]
+                
+                for k := 1; k < 6; k++ {
+                        if strings.Contains(lines[k], "created by      : ") == true {
+                                author[i] = strings.Split(lines[k], ": ")[1]
+                        }
+                        if strings.Contains(lines[k], "title           : ") == true {
+                                title[i] = strings.Split(lines[k], ": ")[1]
+                        }
+                        if strings.Contains(lines[k], "created on      : ") == true {
+                                time[i] = strings.Split(lines[k], ": ")[1]
+                        }
+                }
+                
+        }
+        
+        return author, title, time, filename
 }
 
 func defineGalleries (galleryDirs []os.FileInfo) ([]string, []string) {
@@ -772,9 +819,8 @@ func render_site() {
                 blogs, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.blogdir+"/*.md")
                 dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
                 
-                site.renderPages(pages, "")
+                site.renderPages(pages, blogs, "")
                 site.copyRenderedPages(pages, "")
-                site.renderBlogs(blogs, pages)
                 site.renderGalleries(dirs, pages, "")
         } else {
                 for i := 0; i < len(site.languages); i++ {
@@ -784,10 +830,10 @@ func render_site() {
                         pages, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.languages[i]+"/*.html")
                         blogs, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.languages[i]+"/"+site.blogdir+"/*.md")
                         //dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
+
+                        site.renderPages(pages, blogs, site.languages[i])
                         
-                        site.renderPages(pages, site.languages[i])
                         
-                        site.renderBlogs(blogs, pages)
                         //site.renderGalleries(dirs, pages, site.languages[i])
                 }
                 
