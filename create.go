@@ -36,6 +36,7 @@ import (
 )
 
 var now = time.Now().Format(time.RFC1123)
+var nowFile = time.Now().Format(time.RFC3339)
 
 func createPage (pagename string, languagedir string) {
 
@@ -80,7 +81,7 @@ func createBlog (blogName string, languagedir string) {
         os.MkdirAll(filepath.Join("pages",languagedir,"blogs"), 0755)
     }
     
-    filename := blogName+" - "+now+".md"
+    filename := nowFile+"-"+blogName+".md"
     
     os.Create("pages/"+languagedir+"/blogs/"+filename)
     
