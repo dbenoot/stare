@@ -27,7 +27,7 @@ import (
 
 // define variables
 
-var cfg, _ = ini.Load("config.ini")
+var cfg, _ = ini.LooseLoad("config.ini")
 
 var site = Site{    
         pagedir : "pages",
@@ -39,8 +39,6 @@ var site = Site{
         primaryLang : cfg.Section("general").Key("primary_language").String(),
         languages : cfg.Section("general").Key("languages").Strings(","),
 }
-
-
 
 // define Site
 
@@ -82,6 +80,7 @@ func main() {
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
 		fmt.Println("The most commonly used stare commands are: \n")
+		fmt.Println(" init          Initialize a stare website.\n")
 		fmt.Println(" render        Renders the website.\n")
 		fmt.Println(" list          Lists all pages, blog posts and galleries.\n")
 		fmt.Println(" create")
@@ -109,6 +108,8 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "init":
+		init_site()
 	case "render":
 		render_site()
 	case "create":
@@ -204,4 +205,8 @@ func main() {
 		}
 	}
 
+}
+
+func loadConfig () {
+	
 }

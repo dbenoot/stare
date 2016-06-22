@@ -142,27 +142,27 @@ func unarchive_blog(blogname string) {
     
 }
 
+//TODO add something like finditems for the galleries so incomplete names can be further selected
+
 func archive_gallery(galleryname string) {
     
-    path := "archive" + string(filepath.Separator) + "gallery" + string(filepath.Separator)
+    path := filepath.Join("archive", "pages", "gallery")
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
     }
 
     fmt.Println("Archiving gallery", galleryname)
-
-    copydir("gallery" + string(filepath.Separator) + galleryname, path + galleryname)
+    movedir(filepath.Join("pages", "gallery", galleryname), filepath.Join(path, galleryname))
 }
 
 func unarchive_gallery(galleryname string) {
-    path := "archive" + string(filepath.Separator) + "gallery" + string(filepath.Separator)
+    path := filepath.Join("archive", "pages", "gallery")
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
     }
 
     fmt.Println("Archiving gallery", galleryname)
-
-    copydir(path + galleryname, "gallery" + string(filepath.Separator) + galleryname)
+    movedir(filepath.Join(path, galleryname), filepath.Join("pages","gallery", galleryname))
 }
