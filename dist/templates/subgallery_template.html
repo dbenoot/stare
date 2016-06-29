@@ -4,55 +4,19 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title><<~~TITLE~~>></title>
-
-	<link href="<<~~CSS~~>>lightbox.min.css" rel="stylesheet">
-    <link href="<<~~CSS~~>>bootstrap.min.css" rel="stylesheet">
-    
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
   </head>
   
   <body>
     
-<<~~NAVBAR~~>>
-
-    <div class="container gallery-title">
-        <div class="row text-center">
-            <div class"col-lg-12 col-md-12 col-sm-12 col-xs-12"><h1><<~~GALLERYTITLE~~>></h1>
-        </div>
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center"><a href="../gallery.html">Terug naar overzicht</a></div>
+    <<~~NAVBAR~~>>
     
-        </div>
+    <h1><<~~GALLERYTITLE~~>></h1>
+    <a href="../gallery.html">Back</a>
     
-        <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 gallery-top-row">
-<<~~SUBGALLERYITEM~~>>
-            </div>
-        </div>
-    </div>
-
-<<~~FOOTER~~>>
+    <<~~SUBGALLERYITEM~~>>
     
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <<~~FOOTER~~>>
     
-    <script src="<<~~JS~~>>bootstrap.min.js"></script>
-    <script src="<<~~JS~~>>lightbox.min.js"></script>
-    <script type="text/javascript">
-      $(function(){
-        $('a[rel=lightbox-rel]').lightBox({
-          containerResizeSpeed: 250,
-          fixedNavigation: true,
-          alwaysShowNavOnTouchDevices: true
-        });
-      });
-    </script>
   </body>
 </html>
