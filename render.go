@@ -14,6 +14,11 @@
 
 // Render all production pages and galleries
 
+
+// TODO 
+
+// rewrite remove_header so it cuts on the second line consisting of ------
+
 package main
 
 import (
@@ -25,6 +30,7 @@ import (
         "fmt"
         //"github.com/go-ini/ini"
         "github.com/nfnt/resize"
+        "github.com/russross/blackfriday"
         "image/jpeg"
         "strconv"
         "time"
@@ -120,7 +126,8 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
         menu, menuName := createMenu(pages, language)
         all_pages, draft_pages := definePages(pages)
         
-        site.processBlogs(blogs)
+        posted_blogs, _ := defineBlogs(blogs)
+        author, title, time, filename := dissectBlogs(posted_blogs)
         
         // add navbar to the pages and resolve the ties NAVACTIVE, NAVLINK, NAVITEM
         // cycling through all posted pages, then cycling through all menu items
@@ -128,14 +135,48 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
         
         for i := 0; i < len(all_pages); i++ {
                 
-                inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
+                inject_html(all_pages[i], "<<~~NAVBAR~~>>", "temp/navbar.html","")
                 
                 create_navbar(all_pages[i], language, menu, menuName, false)
 
                 // populate the header and footer tie
                 
-                inject_html(all_pages[i], "<<~~HEADER~~>>", site.templatedir+"/"+language+"/header_template.html")
-                inject_html(all_pages[i], "<<~~FOOTER~~>>", site.templatedir+"/"+language+"/footer_template.html")
+                inject_html(all_pages[i], "<<~~HEADER~~>>", site.templatedir+"/"+language+"/header_template.html","")
+                inject_html(all_pages[i], "<<~~FOOTER~~>>", site.templatedir+"/"+language+"/footer_template.html","")
+                
+                // populate the blogpost items
+                
+                // insert blogtotal function to get # of blogs; then use this number to rebuild 2nd field in inject_html (blogcounter - blogtotal)!
+                
+                var originalBlogTotal = totalBlogs(all_pages[i])
+                var extraCount = 0
+                var blogTotal = originalBlogTotal
+
+                if blogTotal > len(filename) {
+                        blogTotal = len(filename)
+                }
+                
+                for blogCounter := blogTotal; blogCounter > 0; blogCounter-- {
+                        
+                        number := originalBlogTotal-extraCount
+                        newNumber := originalBlogTotal-extraCount-1
+                        
+                        if blogTotal-extraCount == 1 {
+                                inject_html(all_pages[i], "<<~~BLOG:POSTS:"+strconv.Itoa(number)+"~~>>", site.templatedir+"/"+language+"/blogpost_template.html", "")
+                                inject_html(all_pages[i], "<<~~BLOG:TITLES:"+strconv.Itoa(number)+"~~>>", site.templatedir+"/"+language+"/blogtitles_template.html", "")
+                        } else {
+                                inject_html(all_pages[i], "<<~~BLOG:POSTS:"+strconv.Itoa(number)+"~~>>", site.templatedir+"/"+language+"/blogpost_template.html", "<<~~BLOG:POSTS:"+strconv.Itoa(newNumber)+"~~>>")
+                                inject_html(all_pages[i], "<<~~BLOG:TITLES:"+strconv.Itoa(number)+"~~>>", site.templatedir+"/"+language+"/blogtitles_template.html", "<<~~BLOG:TITLES:"+strconv.Itoa(newNumber)+"~~>>")
+                        }
+                        substitute(all_pages[i], "<<~~BLOGPOST:TITLE~~>>",title[extraCount])
+                        substitute(all_pages[i], "<<~~BLOGPOST:AUTHOR~~>>",author[extraCount])
+                        substitute(all_pages[i], "<<~~BLOGPOST:TIME~~>>",time[extraCount])
+                        
+                        blogContent := loadBlogContent(filename[extraCount])
+                        substitute(all_pages[i], "<<~~BLOGPOST:CONTENT~~>>",blogContent)
+                        
+                        extraCount++
+                }
                 
                 // resolve ties CSS, JS, PAGE
                 
@@ -244,52 +285,6 @@ func (site Site) copyRenderedPages(pages []string, language string) {
         }
 }
 
-func (site Site) processBlogs(blogs []string) {
-        
-        // create menu items for the navbar
-        // define posted and draft blogs
-        
-        //menu, menuName := createMenu(pages)
-        posted_blogs, draft_blogs := defineBlogs(blogs)
-        author, title, time, filename := dissectBlogs(posted_blogs)
-        
-        fmt.Println ("author:", author)
-        fmt.Println ("title:", title)
-        fmt.Println ("time:", time)
-        fmt.Println ("filename:", filename)
-        
-        // RENDER BLOG POSTS
-        //
-        // Functionality
-        // 
-        // - list of all blogs
-        // - pagination
-        // - taxonomy
-        // - author
-        // - shortlist with x titles
-        // - sorting on date
-        //
-        
-        if len(draft_blogs) != 0 && len(posted_blogs) == 0 { // remove && len(all_blogs) == 0; only added to keep allblogs definition 
-                fmt.Println("Draft blog posts were not rendered.")
-        }
-
-        fmt.Println(posted_blogs)
-
-        // fmt.Println("The following blog posts were rendered: ")
-        
-        // for i := 0; i < len(all_blogs); i++ {
-        //         fmt.Println(all_blogs[i])
-        // }
-        
-        // if len(draft_blogs) != 0 {
-        //         fmt.Println("The following blog posts are still in draft and were not rendered: ")
-        //         for i := 0; i < len (draft_blogs); i++ {
-        //                 fmt.Println(draft_blogs[i])
-        //         }
-        // }
-}
-
 func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language string) {
 
         // create menu items for the navbar
@@ -328,7 +323,7 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language st
         
         for i := 0; i < len(all_galleries); i++ {
 
-                inject_html("temp/"+site.pagedir+"/gallery.html", "<<~~GALLERYITEM~~>>", "templates/gallery_item.html")
+                inject_html("temp/"+site.pagedir+"/gallery.html", "<<~~GALLERYITEM~~>>", "templates/gallery_item.html", "")
 
                 imagepath := "temp/"+site.pagedir+"/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
                 renderpath := "rendered/"+site.pagedir+"/"+site.gallerydir+"/"+all_galleries_name[i]+"/"
@@ -341,7 +336,7 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language st
                         substitute("temp/pages/gallery.html","<<~~SUBGALLERYTHUMB~~>>",strings.Split(strings.Split(images[a],"temp/pages/")[1],".")[0]+"_thumb.jpg")
                         substitute("temp/pages/gallery.html","<<~~SUBGALLERYNAME~~>>",all_galleries_name[i])
                         
-                        inject_html(all_galleries[i], "<<~~SUBGALLERYITEM~~>>", site.templatedir+"/subgallery_item.html")
+                        inject_html(all_galleries[i], "<<~~SUBGALLERYITEM~~>>", site.templatedir+"/subgallery_item.html", "")
                         substitute(all_galleries[i],"<<~~SUBIMAGE~~>>", strings.Split(images[a],"temp/pages/gallery/")[1])
                         substitute(all_galleries[i],"<<~~SUBIMAGETHUMB~~>>", strings.Split(strings.Split(images[a],"temp/pages/gallery/")[1],".")[0]+"_thumb.jpg")
 
@@ -358,8 +353,8 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language st
                 
                 // inject header and navbar
                 
-                inject_html(all_galleries[i], "<<~~HEADER~~>>", site.templatedir+"/header_template.html")
-                inject_html(all_galleries[i], "<<~~NAVBAR~~>>", "temp/navbar.html")
+                inject_html(all_galleries[i], "<<~~HEADER~~>>", site.templatedir+"/header_template.html", "")
+                inject_html(all_galleries[i], "<<~~NAVBAR~~>>", "temp/navbar.html", "")
                 
                 // populate navbar with the correct links
 
@@ -367,7 +362,7 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language st
 
                 // populate the footer tie
                 
-                inject_html(all_galleries[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html")                
+                inject_html(all_galleries[i], "<<~~FOOTER~~>>", site.templatedir+"/footer_template.html", "")                
                 
                 // resolve ties CSS, JS, PAGE
                 
@@ -454,7 +449,7 @@ func prepend(text, file string){
         }    
 }
 
-func inject_html (file, tie, html_source_file string) {
+func inject_html (file, tie, html_source_file string, footer string) {
         input, err := ioutil.ReadFile(file)
         if err != nil {
                 log.Fatalln(err)
@@ -470,6 +465,9 @@ func inject_html (file, tie, html_source_file string) {
         s := string(html_input)
         
         for line := range lines {
+                if strings.Contains(lines[line], "<<~~BLOG:POSTS:") == true && len(footer) > 0 {
+                        lines[line] = lines[line] +"\n"+ footer
+                }
                 lines[line] = strings.Replace(lines[line], tie, s, -1)
         }
         
@@ -478,6 +476,48 @@ func inject_html (file, tie, html_source_file string) {
         if err != nil {
                 log.Fatalln(err)
         } 
+}
+
+func totalBlogs (file string) int {
+        
+        var a int
+        
+        input, err := ioutil.ReadFile(file)
+        if err != nil {
+                log.Fatalln(err)
+        }
+
+        lines := strings.Split(string(input), "\n")
+
+        for line := range lines {
+                if strings.Contains(lines[line],"<<~~BLOG:POSTS:") == true {
+                        a, _ = strconv.Atoi(strings.Split(strings.Split(lines[line], "<<~~BLOG:POSTS:")[1], "~~>>")[0])
+                        
+                }
+                
+        }
+        return a
+}
+
+func loadBlogContent (file string) string {
+        input, err := ioutil.ReadFile(file)
+        if err != nil {
+                log.Fatalln(err)
+        }
+        
+        lines := strings.Split(string(input), "\n")
+        
+        for i := 0; i <= 6; i++ {
+                lines = append(lines[:0], lines[1:]...)
+                
+        }
+        
+        output := strings.Join(lines, "\n")
+        
+        html := blackfriday.MarkdownCommon([]byte(output))
+        
+        return string(html)
+        
 }
 
 func create_navbar (page string, language string, menu map[int64]string, menuName map[int64]string, galleryYN bool) {
