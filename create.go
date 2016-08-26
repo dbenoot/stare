@@ -124,6 +124,25 @@ func create_blog (blogName string) {
 }
 
 func create_gallery(galleryname string) {
+    
+    // create gallery.html content and sub-gallery htmls
+        
+    if _, err := os.Stat(site.pagedir+"/gallery.html"); os.IsNotExist(err) {
+            copyfile(site.templatedir+"/gallery_template.html", site.pagedir+"/gallery.html")
+            
+            cfg.Section("general").NewKey("gallery", "y")
+            cfg.SaveTo("config.ini")
+            
+            now := time.Now().Format(time.RFC1123)
+            prepend("status          : posted\n------------------------------------------------------------------------", "pages/gallery.html")    
+            prepend("menu name       : gallery", "pages/gallery.html")
+            prepend("menu order      : 10", "pages/gallery.html")
+            prepend("present in menu : y", "pages/gallery.html")
+            prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/gallery.html")
+    }
+    
+    // Create new gallery
+    
     fmt.Println("Creating gallery " + galleryname)
     os.MkdirAll("pages" + string(filepath.Separator) + "gallery" + string(filepath.Separator) + galleryname ,0755)
 }

@@ -33,7 +33,7 @@ import (
         "github.com/russross/blackfriday"
         "image/jpeg"
         "strconv"
-        "time"
+        //"time"
         "path"
 )
 
@@ -293,19 +293,6 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language st
         
         menu, menuName := createMenu(pages, language)
         all_galleries, all_galleries_name := defineGalleries(dirs)
-        
-        // create gallery.html content and sub-gallery htmls
-        
-        if _, err := os.Stat(site.pagedir+"/gallery.html"); os.IsNotExist(err) {
-                copyfile(site.templatedir+"/gallery_template.html", site.pagedir+"/gallery.html")
-                
-                now := time.Now().Format(time.RFC1123)
-                prepend("status          : posted\n------------------------------------------------------------------------", "pages/gallery.html")    
-                prepend("menu name       : gallery", "pages/gallery.html")
-                prepend("menu order      : 10", "pages/gallery.html")
-                prepend("present in menu : y", "pages/gallery.html")
-                prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/gallery.html")
-        }
         
         // Loop over all images and do the following updates
         //
@@ -674,27 +661,31 @@ func createMenu (fileList []string, language string) (map[int64]string, map[int6
 
         for i := 0; i < len(fileList); i++ {
         
-                input, err := ioutil.ReadFile(fileList[i])
-                if err != nil {
-                        log.Fatalln(err)
-                }
-        
-                lines := strings.Split(string(input), "\n")
+                if site.gallery == false && fileList[i] == "temp/pages/gallery.html" {
+                        
+                } else {
+                        input, err := ioutil.ReadFile(fileList[i])
+                        if err != nil {
+                                log.Fatalln(err)
+                        }
                 
-                for j := 1; j < 6; j++  {
-                        if strings.Contains(lines[j], "posted") == true {
-                                for k := 1; k < 6; k++ {
-                                        if strings.Contains(lines[k], "present in menu : y") == true {
-                                                menuOrder, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
-                                                menuItem = append(menuItem, strings.Split(fileList[i], "/")[2])
-                                                menu[menuOrder] = fileList[i]
+                        lines := strings.Split(string(input), "\n")
+                        
+                        for j := 1; j < 6; j++  {
+                                if strings.Contains(lines[j], "posted") == true {
+                                        for k := 1; k < 6; k++ {
+                                                if strings.Contains(lines[k], "present in menu : y") == true {
+                                                        menuOrder, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
+                                                        menuItem = append(menuItem, strings.Split(fileList[i], "/")[2])
+                                                        menu[menuOrder] = fileList[i]
+                                                }
+                                                if strings.Contains(lines[k], "menu name       : ") == true {
+                                                        menuOrder, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
+                                                        menuName[menuOrder] = strings.Split(lines[k], ": ")[1]
+                                                }
                                         }
-                                        if strings.Contains(lines[k], "menu name       : ") == true {
-                                                menuOrder, _ := strconv.ParseInt(strings.Split(lines[3], ": ", )[1], 0, 64)
-                                                menuName[menuOrder] = strings.Split(lines[k], ": ")[1]
-                                        }
-                                }
-                        } 
+                                } 
+                        }
                 }
         }
         return menu, menuName
@@ -712,21 +703,24 @@ func definePages (fileList []string) ([]string, []string) {
         // check whether the page should be present in the menu
         
         for i := 0; i < len(fileList); i++ {
+                if site.gallery == false && fileList[i] == "temp/pages/gallery.html" {
+                        
+                } else {
+                        input, err := ioutil.ReadFile(fileList[i])
+                        if err != nil {
+                                log.Fatalln(err)
+                        }
         
-                input, err := ioutil.ReadFile(fileList[i])
-                if err != nil {
-                        log.Fatalln(err)
-                }
-
-                lines := strings.Split(string(input), "\n")
-                
-                for j := 1; j < 6; j++  {
-                        if strings.Contains(lines[j], "posted") == true {
-                                all_pages = append(all_pages, fileList[i])
-                                pagesAllLang = append(pagesAllLang, fileList[i])
-                        } 
-                        if strings.Contains(lines[j], "in_draft") == true {
-                                draft_pages = append(draft_pages, fileList[i])
+                        lines := strings.Split(string(input), "\n")
+                        
+                        for j := 1; j < 6; j++  {
+                                if strings.Contains(lines[j], "posted") == true {
+                                        all_pages = append(all_pages, fileList[i])
+                                        pagesAllLang = append(pagesAllLang, fileList[i])
+                                } 
+                                if strings.Contains(lines[j], "in_draft") == true {
+                                        draft_pages = append(draft_pages, fileList[i])
+                                }
                         }
                 }
         }
@@ -861,7 +855,9 @@ func render_site() {
                 
                 site.renderPages(pages, blogs, "")
                 site.copyRenderedPages(pages, "")
-                site.renderGalleries(dirs, pages, "")
+                if site.gallery == true {
+                        site.renderGalleries(dirs, pages, "")
+                }
         } else {
                 for i := 0; i < len(site.languages); i++ {
                         

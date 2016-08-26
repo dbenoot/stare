@@ -24,6 +24,7 @@ package main
 import (
     "fmt"
     "os"
+    "io/ioutil"
     "path/filepath"
     "strings"
 )
@@ -154,6 +155,13 @@ func archive_gallery(galleryname string) {
 
     fmt.Println("Archiving gallery", galleryname)
     movedir(filepath.Join("pages", "gallery", galleryname), filepath.Join(path, galleryname))
+    
+    files, _ := ioutil.ReadDir(site.gallerydir)
+    
+    if len(files) == 0 {
+        cfg.Section("general").NewKey("gallery", "")
+        cfg.SaveTo("config.ini")
+    }
 }
 
 func unarchive_gallery(galleryname string) {
@@ -165,4 +173,9 @@ func unarchive_gallery(galleryname string) {
 
     fmt.Println("Archiving gallery", galleryname)
     movedir(filepath.Join(path, galleryname), filepath.Join("pages","gallery", galleryname))
+    
+    if site.gallery == false {
+        cfg.Section("general").NewKey("gallery", "y")
+        cfg.SaveTo("config.ini")
+    }
 }

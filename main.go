@@ -38,6 +38,7 @@ var site = Site{
         multiLang : cfg.Section("general").Key("multiple_language_support").MustBool(),
         primaryLang : cfg.Section("general").Key("primary_language").String(),
         languages : cfg.Section("general").Key("languages").Strings(","),
+        gallery : cfg.Section("general").Key("gallery").MustBool(),
 }
 
 // define Site
@@ -45,7 +46,7 @@ var site = Site{
 type Site struct {
         pagedir, blogdir, srcdir, gallerydir, templatedir, primaryLang string
         languages []string
-        multiLang bool
+        multiLang, gallery bool
 }
 
 func main() {
