@@ -130,7 +130,6 @@ func movedir(source string, dest string) (err error) {
     return
  }
 
- 
 func copyfile(source string, dest string) (err error) {
      sourcefile, err := os.Open(source)
      if err != nil {

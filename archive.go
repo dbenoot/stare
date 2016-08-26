@@ -143,9 +143,9 @@ func unarchive_blog(blogname string) {
     
 }
 
-//TODO add something like finditems for the galleries so incomplete names can be further selected
-
 func archive_gallery(galleryname string) {
+    
+    var galleries []string
     
     path := filepath.Join("archive", "pages", "gallery")
     _, err := os.Stat(path) 
@@ -153,8 +153,19 @@ func archive_gallery(galleryname string) {
         os.MkdirAll(path, 0755)
     }
 
-    fmt.Println("Archiving gallery", galleryname)
-    movedir(filepath.Join("pages", "gallery", galleryname), filepath.Join(path, galleryname))
+    g, _ := ioutil.ReadDir(filepath.Join(site.pagedir, site.gallerydir))
+
+    for i := 0; i < len(g); i++ {
+        if g[i].IsDir() == true {
+            galleries = append(galleries, g[i].Name())
+        }
+    }
+     
+    
+    gallery := findItem(galleries)
+
+    fmt.Println("Archiving gallery", gallery)
+    movedir(filepath.Join("pages", "gallery", gallery), filepath.Join(path, gallery))
     
     files, _ := ioutil.ReadDir(site.gallerydir)
     
@@ -165,14 +176,27 @@ func archive_gallery(galleryname string) {
 }
 
 func unarchive_gallery(galleryname string) {
+    
+    var galleries []string
+
     path := filepath.Join("archive", "pages", "gallery")
     _, err := os.Stat(path) 
     if err != nil {
         os.MkdirAll(path, 0755)
     }
 
-    fmt.Println("Archiving gallery", galleryname)
-    movedir(filepath.Join(path, galleryname), filepath.Join("pages","gallery", galleryname))
+    g, _ := ioutil.ReadDir(filepath.Join(path))
+
+    for i := 0; i < len(g); i++ {
+        if g[i].IsDir() == true {
+            galleries = append(galleries, g[i].Name())
+        }
+    }
+
+    gallery := findItem(galleries)
+
+    fmt.Println("Archiving gallery", gallery)
+    movedir(filepath.Join(path, gallery), filepath.Join("pages","gallery", gallery))
     
     if site.gallery == false {
         cfg.Section("general").NewKey("gallery", "y")
