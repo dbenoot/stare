@@ -52,7 +52,7 @@ func checkSiteNotExist () bool {
 
 func createConfigFile() {
 
-    output := "[general]\nmultiple_language_support = \nprimary_language = \nlanguages = "
+    output := "[general]\nmultiple_language_support = \nprimary_language = \nlanguages = \ngallery = "
     
     err := ioutil.WriteFile("config.ini", []byte(output), 0644)
     if err != nil {
@@ -62,28 +62,15 @@ func createConfigFile() {
 }
 
 func createFolders() {
-
-	dirs := []string{
-    	filepath.Join("archive","pages","blogs"),
-    	filepath.Join("archive","pages","gallery"),
-    	filepath.Join("pages","blogs"),
-    	filepath.Join("pages","gallery"),
-    	"src",
-    	"templates",
-	}
-    
     for i := 0; i < len(dirs); i++ {
         os.MkdirAll(dirs[i] ,0755)
     }
-    
-    
 }
 
 func createTemplates() {
     for key, value := range templ {
         initTemplate(key, value)
     }
-    
 }
 
 func IsDirEmpty(name string) (bool, error) {
@@ -122,4 +109,13 @@ var templ = map[string]string {
     "page_template.html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title><<~~TITLE~~>></title>\n  </head>\n  \n  <body>\n    \n    <<~~NAVBAR~~>>\n\n  </body>\n</html>",
     "subgallery_item.html": "                <div><a href=\"<<~~SUBIMAGE~~>>\"><img src=\"<<~~SUBIMAGETHUMB~~>>\" width=\"350\" height=\"275\"></a></div>\n<<~~SUBGALLERYITEM~~>>",
     "subgallery_template.html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title><<~~TITLE~~>></title>\n  </head>\n  \n  <body>\n    \n    <<~~NAVBAR~~>>\n    \n    <h1><<~~GALLERYTITLE~~>></h1>\n    <a href=\"../gallery.html\">Back</a>\n    \n    <<~~SUBGALLERYITEM~~>>\n    \n    <<~~FOOTER~~>>\n    \n  </body>\n</html>",
+}
+
+var dirs = []string{
+	filepath.Join("archive","pages","blogs"),
+	filepath.Join("archive","pages","gallery"),
+	filepath.Join("pages","blogs"),
+	filepath.Join("pages","gallery"),
+	"src",
+	"templates",
 }
