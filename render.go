@@ -35,6 +35,7 @@ import (
         "strconv"
         //"time"
         "path"
+        "github.com/oliamb/cutter"
 )
 
 var wd, _ = os.Getwd()
@@ -389,7 +390,7 @@ func resize_picture (filename, output_folder string) {
 
         b := img.Bounds()
         imgWidth := b.Max.X
-        //imgHeight := b.Max.Y    
+        imgHeight := b.Max.Y    
         
         if imgWidth > 1000 {
                 // resize to width 1000 using Lanczos resampling
@@ -406,8 +407,24 @@ func resize_picture (filename, output_folder string) {
         }
         
         // Create the thumbnails
+        n := img
         
-        n := resize.Resize(350, 0, img, resize.Lanczos3)
+        fmt.Println(imgHeight)
+        switch {
+                case imgHeight <= 275:
+                        n, err = cutter.Crop(img, cutter.Config{
+                                Width: 350,
+                                Height: 275,
+                                Mode: cutter.Centered, 
+                        })
+                default:
+                        tempn := resize.Resize(350, 0, img, resize.Lanczos3)
+                        n, err = cutter.Crop(tempn, cutter.Config{
+                                Width: 350,
+                                Height: 275,
+                                Mode: cutter.Centered,
+                        })
+        }
         
         out2, err := os.Create(output_thumb)
         if err != nil {
