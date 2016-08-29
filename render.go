@@ -375,6 +375,7 @@ func resize_picture (filename, output_folder string) {
         file_temp :=  strings.Split(filename, "/")
         img_name := file_temp[len(file_temp)-1]
         
+
         output_file := output_folder+img_name
         output_thumb := output_folder+strings.Split(img_name, ".")[0]+"_thumb.jpg"
         
@@ -382,10 +383,12 @@ func resize_picture (filename, output_folder string) {
         if err != nil {
                 log.Fatal(err)
         }
+        
         img, err := jpeg.Decode(file)
         if err != nil {
                 log.Fatal(err)
         }
+
         file.Close()
 
         b := img.Bounds()
@@ -409,7 +412,6 @@ func resize_picture (filename, output_folder string) {
         // Create the thumbnails
         n := img
         
-        fmt.Println(imgHeight)
         switch {
                 case imgHeight <= 275:
                         n, err = cutter.Crop(img, cutter.Config{
