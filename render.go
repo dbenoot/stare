@@ -126,7 +126,7 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
 
         menu, menuName := createMenu(pages, language)
         all_pages, draft_pages := definePages(pages)
-        
+
         posted_blogs, _ := defineBlogs(blogs)
         author, title, time, filename := dissectBlogs(posted_blogs)
         
@@ -293,6 +293,7 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language st
         // define all_galleries and all_galleries_name
         
         menu, menuName := createMenu(pages, language)
+
         all_galleries, all_galleries_name := defineGalleries(dirs)
         
         // Loop over all images and do the following updates
@@ -872,11 +873,13 @@ func render_site() {
                 blogs, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.blogdir+"/*.md")
                 dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
                 
-                site.renderPages(pages, blogs, "")
-                site.copyRenderedPages(pages, "")
                 if site.gallery == true {
                         site.renderGalleries(dirs, pages, "")
                 }
+                
+                site.renderPages(pages, blogs, "")
+                site.copyRenderedPages(pages, "")
+                
         } else {
                 for i := 0; i < len(site.languages); i++ {
                         
@@ -884,12 +887,13 @@ func render_site() {
                         
                         pages, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.languages[i]+"/*.html")
                         blogs, _ := filepath.Glob("temp/"+site.pagedir+"/"+site.languages[i]+"/"+site.blogdir+"/*.md")
-                        //dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
-
+                        dirs, _ := ioutil.ReadDir ("temp/"+site.pagedir+"/"+site.gallerydir+"/")
+                        if site.gallery == true {
+                                site.renderGalleries(dirs, pages, site.languages[i])
+                        }
+                        
                         site.renderPages(pages, blogs, site.languages[i])
-                        
-                        
-                        //site.renderGalleries(dirs, pages, site.languages[i])
+
                 }
                 
                 for i := 0; i < len(site.languages); i++ {
