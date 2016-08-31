@@ -179,30 +179,35 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
                         extraCount++
                 }
                 
-                // resolve ties CSS, JS, PAGE
+                // resolve ties CSS, JS, PAGE, IMG
                 
                 if site.multiLang == true && language == site.primaryLang {
                         if strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1] == "index.html" {
                                 substitute(all_pages[i], "<<~~JS~~>>","js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","css/")
+                                substitute(all_pages[i], "<<~~IMG~~>>","img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
                         } else {
                                 substitute(all_pages[i], "<<~~JS~~>>","../../js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","../../css/")
+                                substitute(all_pages[i], "<<~~IMG~~>>","../../img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","")
                         }
                 } else if site.multiLang == true && language != site.primaryLang {
                         substitute(all_pages[i], "<<~~JS~~>>","../../js/")
                         substitute(all_pages[i], "<<~~CSS~~>>","../../css/")
+                        substitute(all_pages[i], "<<~~IMG~~>>","../../img/")
                         substitute(all_pages[i], "<<~~PAGE~~>>","")
                 } else {
                         if strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1] == "index.html" {
                                 substitute(all_pages[i], "<<~~JS~~>>","js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","css/")
+                                substitute(all_pages[i], "<<~~IMG~~>>","img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
                         } else {
                                 substitute(all_pages[i], "<<~~JS~~>>","../js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","../css/")
+                                substitute(all_pages[i], "<<~~IMG~~>>","../img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","")
                         }
                 }
@@ -328,6 +333,7 @@ func (site Site) renderGalleries(dirs []os.FileInfo, pages []string, language st
                         inject_html(all_galleries[i], "<<~~SUBGALLERYITEM~~>>", site.templatedir+"/subgallery_item.html", "")
                         substitute(all_galleries[i],"<<~~SUBIMAGE~~>>", strings.Split(images[a],"temp/pages/gallery/")[1])
                         substitute(all_galleries[i],"<<~~SUBIMAGETHUMB~~>>", strings.Split(strings.Split(images[a],"temp/pages/gallery/")[1],".")[0]+"_thumb.jpg")
+                        substitute(all_galleries[i],"<<~~SUBGALLERYNAME~~>>",all_galleries_name[i])
 
                         resize_picture(images[a], renderpath)
                 }
