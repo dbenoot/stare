@@ -76,14 +76,13 @@ func (site Site) createFolder () {
 
 func (site Site) copySrc () {
         srcItems, _ := filepath.Glob(site.srcdir+"/*")
-
         for i := 0; i < len(srcItems); i++ {
                 file, err := os.Open(srcItems[i])
                 if err != nil {
                     // handle the error and return
                 }
                 defer file.Close()
-                
+
                 fi, err := file.Stat()
                 if err != nil {
                     // handle the error and return
@@ -96,7 +95,6 @@ func (site Site) copySrc () {
                     copyfile(srcItems[i], "rendered/"+strings.Split(srcItems[i], "/")[1])
                     //fmt.Println("Reached this point - ", srcItems[i])
                 }
-
         }
 }
 
