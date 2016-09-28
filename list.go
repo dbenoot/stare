@@ -22,6 +22,8 @@ import (
     "fmt"
     "io/ioutil"
     "path/filepath"
+    "log"
+    "strings"
     )
 
 var j int
@@ -30,7 +32,7 @@ func sourcelist() {
     fmt.Println("PAGES")
     j = 1
     if site.multiLang == true {
-        for i := 1; i <= len(site.languages); i++ {
+        for i := 0; i < len(site.languages); i++ {
             list("pages/"+site.languages[i]+"/*.html")
         }
     } else {
@@ -59,7 +61,11 @@ func list (folder string) {
 
     
     for i:= 0; i < len(files); i++ {
-           fmt.Println(j , " - " , files[i])
+            if checkStatus(files[i]) == false {
+                fmt.Println(j , " - " , files[i])
+            } else {
+                fmt.Println(j , " - " , files[i], " (draft)")
+            }
            j += 1 
     }    
     
@@ -73,5 +79,21 @@ func listdir (folder string) {
     fmt.Println(i, " - ", f.Name())
     i += 1
     }
-    
     }
+
+func checkStatus (file string) bool {
+    input, err := ioutil.ReadFile(file)
+                if err != nil {
+                        log.Fatalln(err)
+                }
+
+                lines := strings.Split(string(input), "\n")
+                
+                for j := 1; j < 6; j++  {
+                        if strings.Contains(lines[j], "in_draft") == true {
+                                return true
+                        }
+                }
+    
+    return false;
+}
