@@ -126,7 +126,11 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
         all_pages, draft_pages := definePages(pages)
 
         posted_blogs, _ := defineBlogs(blogs)
-        author, title, time, filename := dissectBlogs(posted_blogs)
+        author, title, time, filename, _, revTaxonomy := dissectBlogs(posted_blogs)
+        
+        //fmt.Println(taxonomy)
+        //fmt.Println(revTaxonomy)
+        //fmt.Println(title)
         
         // add navbar to the pages and resolve the ties NAVACTIVE, NAVLINK, NAVITEM
         // cycling through all posted pages, then cycling through all menu items
@@ -170,6 +174,7 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
                         substitute(all_pages[i], "<<~~BLOGPOST:TITLE~~>>",title[extraCount])
                         substitute(all_pages[i], "<<~~BLOGPOST:AUTHOR~~>>",author[extraCount])
                         substitute(all_pages[i], "<<~~BLOGPOST:TIME~~>>",time[extraCount])
+                        substitute(all_pages[i], "<<~~BLOGPOST:TAXONOMY~~>>",revTaxonomy[extraCount])
                         
                         blogContent := loadBlogContent(filename[extraCount])
                         substitute(all_pages[i], "<<~~BLOGPOST:CONTENT~~>>",blogContent)
@@ -782,12 +787,14 @@ func defineBlogs (fileList []string) ([]string, []string) {
         return posted_blogs, draft_blogs
 }
 
-func dissectBlogs (posted_blogs []string) (map[int]string, map[int]string, map[int]string, map[int]string) {
+func dissectBlogs (posted_blogs []string) (map[int]string, map[int]string, map[int]string, map[int]string, map[string]string, map[int]string) {
         
         author := make(map[int]string)
         title := make(map[int]string)
         time := make(map[int]string)
         filename := make(map[int]string)
+        taxonomy := make(map[string]string)
+        revTaxonomy := make(map[int]string)
         
         // Read pages
 
@@ -812,11 +819,36 @@ func dissectBlogs (posted_blogs []string) (map[int]string, map[int]string, map[i
                         if strings.Contains(lines[k], "created on      : ") == true {
                                 time[i] = strings.Split(lines[k], ": ")[1]
                         }
+                        if strings.Contains(lines[k], "taxonomies      : ") == true {
+                                numTax := len(strings.Split(strings.Split(lines[k], ": ")[1], ";"))
+                                Tx := strings.Split(strings.Split(lines[k], ": ")[1], ";")
+                                
+                                // create taxonomy
+                                
+                                for l := 0; l < numTax; l++ {
+                                        if val, ok := taxonomy[Tx[l]]; ok {
+                                            taxonomy[Tx[l]] = val + ";" + strconv.Itoa(i)
+                                        } else {
+                                                taxonomy[Tx[l]] = strconv.Itoa(i)
+                                        }
+                                }
+                                
+                                // create revTaxonomy
+                                
+                                for l := 0; l < numTax; l++ {
+                                        if val, ok := revTaxonomy[i]; ok {
+                                            revTaxonomy[i] = val + ";" + Tx[l]
+                                        } else {
+                                            revTaxonomy[i] = Tx[l]
+                                        }
+                                }
+                                
+                        }
                 }
-                
         }
-        
-        return author, title, time, filename
+        fmt.Println(taxonomy)
+        fmt.Println(revTaxonomy)
+        return author, title, time, filename, taxonomy, revTaxonomy
 }
 
 func defineGalleries (galleryDirs []os.FileInfo) ([]string, []string) {
