@@ -176,6 +176,8 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
                         substitute(all_pages[i], "<<~~BLOGPOST:TIME~~>>",time[extraCount])
                         substitute(all_pages[i], "<<~~BLOGPOST:TAXONOMY~~>>",revTaxonomy[extraCount])
                         
+                        renderTaxLink(revTaxonomy[extraCount])
+                        
                         blogContent := loadBlogContent(filename[extraCount])
                         substitute(all_pages[i], "<<~~BLOGPOST:CONTENT~~>>",blogContent)
                         
@@ -796,6 +798,14 @@ func dissectBlogs (posted_blogs []string) (map[int]string, map[int]string, map[i
         taxonomy := make(map[string]string)
         revTaxonomy := make(map[int]string)
         
+        if _, err := os.Stat(path.Join(site.pagedir,site.blogdir,"taxonomies")); os.IsNotExist(err) {
+                                        blogdir, _ := os.Stat(filepath.Join(site.pagedir,site.blogdir))
+                                        err = os.MkdirAll(path.Join("temp",site.pagedir,site.blogdir,"taxonomies"), blogdir.Mode())
+                                        // if err != nil {
+                                        //         return err
+                                        // }
+                                }
+        
         // Read pages
 
         for i := 0; i < len(posted_blogs); i++ {
@@ -833,6 +843,8 @@ func dissectBlogs (posted_blogs []string) (map[int]string, map[int]string, map[i
                                         }
                                 }
                                 
+                                
+                                
                                 // create revTaxonomy
                                 
                                 for l := 0; l < numTax; l++ {
@@ -846,9 +858,22 @@ func dissectBlogs (posted_blogs []string) (map[int]string, map[int]string, map[i
                         }
                 }
         }
-        fmt.Println(taxonomy)
-        fmt.Println(revTaxonomy)
         return author, title, time, filename, taxonomy, revTaxonomy
+}
+
+func renderTaxLink (taxlist string) string {
+        
+        var link string
+        
+        for i := 1; i <= len(strings.Split(taxlist, ";")); i++ {
+                link = link + strings.Split(taxlist, ";")[i-1] + "  "
+        
+        }
+        
+        
+        
+        fmt.Println(link)
+        return link
 }
 
 func defineGalleries (galleryDirs []os.FileInfo) ([]string, []string) {
