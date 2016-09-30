@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - tip
+  
+install:
+  - go get github.com/go-ini/ini
+  - go get github.com/nfnt/resize
+  - go get github.com/russross/blackfriday
+  - go get -u github.com/shurcooL/sanitized_anchor_name
