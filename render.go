@@ -33,7 +33,7 @@ import (
         "github.com/russross/blackfriday"
         "image/jpeg"
         "strconv"
-        //"time"
+        "time"
         "path"
         "github.com/oliamb/cutter"
 )
@@ -185,28 +185,33 @@ func (site Site) renderPages(pages []string, blogs []string, language string) {
                                 substitute(all_pages[i], "<<~~CSS~~>>","css/")
                                 substitute(all_pages[i], "<<~~IMG~~>>","img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
+                                substitute(all_pages[i], "<<~~INDEX~~>>","index.html")
                         } else {
                                 substitute(all_pages[i], "<<~~JS~~>>","../../js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","../../css/")
                                 substitute(all_pages[i], "<<~~IMG~~>>","../../img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","")
+                                substitute(all_pages[i], "<<~~INDEX~~>>","../../index.html")
                         }
                 } else if site.multiLang == true && language != site.primaryLang {
                         substitute(all_pages[i], "<<~~JS~~>>","../../js/")
                         substitute(all_pages[i], "<<~~CSS~~>>","../../css/")
                         substitute(all_pages[i], "<<~~IMG~~>>","../../img/")
                         substitute(all_pages[i], "<<~~PAGE~~>>","")
+                        substitute(all_pages[i], "<<~~INDEX~~>>","../../index.html")
                 } else {
                         if strings.Split(all_pages[i],"/")[len(strings.Split(all_pages[i],"/"))-1] == "index.html" {
                                 substitute(all_pages[i], "<<~~JS~~>>","js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","css/")
                                 substitute(all_pages[i], "<<~~IMG~~>>","img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","pages/")
+                                substitute(all_pages[i], "<<~~INDEX~~>>","index.html")
                         } else {
                                 substitute(all_pages[i], "<<~~JS~~>>","../js/")
                                 substitute(all_pages[i], "<<~~CSS~~>>","../css/")
                                 substitute(all_pages[i], "<<~~IMG~~>>","../img/")
                                 substitute(all_pages[i], "<<~~PAGE~~>>","")
+                                substitute(all_pages[i], "<<~~INDEX~~>>","../index.html")
                         }
                 }
 
@@ -867,6 +872,8 @@ func RemoveContentsLeaveGit(dir string) error {
 
 func render_site() {
 
+        startTime := time.Now()
+
         fmt.Println("Rendering!")
         site.createFolder()
         site.copySrc()
@@ -910,4 +917,6 @@ func render_site() {
         // Remove the temporary files 
         
         os.RemoveAll(path.Join(wd, "temp"))
+        endTime := time.Now()
+        fmt.Println("Elapsed time:", endTime.Sub(startTime))
 }
