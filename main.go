@@ -23,6 +23,7 @@ import (
     "flag"
     "os"
     "github.com/go-ini/ini"
+    "time"
 )
 
 // define variables
@@ -83,6 +84,7 @@ func main() {
 		fmt.Println("The most commonly used stare commands are: \n")
 		fmt.Println(" init          Initialize a stare website.\n")
 		fmt.Println(" render        Renders the website.\n")
+		fmt.Println(" autorender    Renders the website on file changes.\n")
 		fmt.Println(" list          Lists all pages, blog posts and galleries.\n")
 		fmt.Println(" create")
 		fmt.Println("   -page       Creates a new page")
@@ -112,7 +114,13 @@ func main() {
 	case "init":
 		init_site()
 	case "render":
+		fmt.Println("Rendering!")
+		startTime := time.Now()
 		render_site()
+		endTime := time.Now()
+        fmt.Println("Elapsed time:", endTime.Sub(startTime))
+	case "autorender":
+		autorender_site()
 	case "create":
 		createCommand.Parse(os.Args[2:])
 	case "archive":
