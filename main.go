@@ -30,7 +30,7 @@ import (
 
 var cfg, _ = ini.LooseLoad("config.ini")
 
-var site = Site{    
+var site = Site{
         pagedir : "pages",
         blogdir : "blogs",
         srcdir : "src",
@@ -84,7 +84,7 @@ func main() {
 		fmt.Println("The most commonly used stare commands are: \n")
 		fmt.Println(" init          Initialize a stare website.\n")
 		fmt.Println(" render        Renders the website.\n")
-		fmt.Println(" autorender    Renders the website on file changes.\n")
+		fmt.Println(" watch         Renders the website on file changes.\n")
 		fmt.Println(" list          Lists all pages, blog posts and galleries.\n")
 		fmt.Println(" create")
 		fmt.Println("   -page       Creates a new page")
@@ -119,7 +119,7 @@ func main() {
 		render_site()
 		endTime := time.Now()
         fmt.Println("Elapsed time:", endTime.Sub(startTime))
-	case "autorender":
+	case "watch":
 		autorender_site()
 	case "create":
 		createCommand.Parse(os.Args[2:])
@@ -150,7 +150,7 @@ func main() {
         	create_gallery(*galleryCreateFlag)
 		} else if *blogCreateFlag != "" {
         	create_blog(*blogCreateFlag)
-        }	
+        }
     }
 
 	if archiveCommand.Parsed() {
@@ -176,7 +176,7 @@ func main() {
             unarchive_blog(*blogUnarchiveFlag)
         }
 	}
-	
+
 	if postCommand.Parsed() {
 		if *pagePostFlag == "" && *blogPostFlag == "" {
 			fmt.Println("Please provide the page name using -page option or the blog post using -blog.")
@@ -217,5 +217,5 @@ func main() {
 }
 
 func loadConfig () {
-	
+
 }
