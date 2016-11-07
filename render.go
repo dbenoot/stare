@@ -28,12 +28,10 @@ import (
         "os"
         "path/filepath"
         "fmt"
-        //"github.com/go-ini/ini"
         "github.com/nfnt/resize"
         "github.com/russross/blackfriday"
         "image/jpeg"
         "strconv"
-        "time"
         "path"
         "github.com/oliamb/cutter"
 )
@@ -872,9 +870,6 @@ func RemoveContentsLeaveGit(dir string) error {
 
 func render_site() {
 
-        startTime := time.Now()
-
-        fmt.Println("Rendering!")
         site.createFolder()
         site.copySrc()
         site.copyFiles()
@@ -917,6 +912,5 @@ func render_site() {
         // Remove the temporary files 
         
         os.RemoveAll(path.Join(wd, "temp"))
-        endTime := time.Now()
-        fmt.Println("Elapsed time:", endTime.Sub(startTime))
+        
 }
