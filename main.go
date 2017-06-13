@@ -19,11 +19,11 @@
 package main
 
 import (
-    "fmt"
-    "flag"
-    "os"
-    "github.com/go-ini/ini"
-    "time"
+	"flag"
+	"fmt"
+	"github.com/go-ini/ini"
+	"os"
+	"time"
 )
 
 // define variables
@@ -31,23 +31,23 @@ import (
 var cfg, _ = ini.LooseLoad("config.ini")
 
 var site = Site{
-        pagedir : "pages",
-        blogdir : "blogs",
-        srcdir : "src",
-        gallerydir : "gallery",
-        templatedir : "templates",
-        multiLang : cfg.Section("general").Key("multiple_language_support").MustBool(),
-        primaryLang : cfg.Section("general").Key("primary_language").String(),
-        languages : cfg.Section("general").Key("languages").Strings(","),
-        gallery : cfg.Section("general").Key("gallery").MustBool(),
+	pagedir:     "pages",
+	blogdir:     "blogs",
+	srcdir:      "src",
+	gallerydir:  "gallery",
+	templatedir: "templates",
+	multiLang:   cfg.Section("general").Key("multiple_language_support").MustBool(),
+	primaryLang: cfg.Section("general").Key("primary_language").String(),
+	languages:   cfg.Section("general").Key("languages").Strings(","),
+	gallery:     cfg.Section("general").Key("gallery").MustBool(),
 }
 
 // define Site
 
 type Site struct {
-        pagedir, blogdir, srcdir, gallerydir, templatedir, primaryLang string
-        languages []string
-        multiLang, gallery bool
+	pagedir, blogdir, srcdir, gallerydir, templatedir, primaryLang string
+	languages                                                      []string
+	multiLang, gallery                                             bool
 }
 
 func main() {
@@ -55,29 +55,20 @@ func main() {
 	createCommand := flag.NewFlagSet("create", flag.ExitOnError)
 	pageCreateFlag := createCommand.String("page", "", "Name of the new page.")
 	galleryCreateFlag := createCommand.String("gallery", "", "Name of the new gallery.")
-	blogCreateFlag := createCommand.String("blog", "", "Name of the new gallery.")
 
 	archiveCommand := flag.NewFlagSet("archive", flag.ExitOnError)
 	pageArchiveFlag := archiveCommand.String("page", "", "Name of the page to be archived.")
 	gallerypageArchiveFlag := archiveCommand.String("gallery", "", "Name of the gallery to be archived.")
-	blogArchiveFlag := archiveCommand.String("blog", "", "Name of the blog post to be archived.")
 
 	unarchiveCommand := flag.NewFlagSet("unarchive", flag.ExitOnError)
 	pageUnarchiveFlag := unarchiveCommand.String("page", "", "Name of the page to be unarchived.")
 	gallerypageUnarchiveFlag := unarchiveCommand.String("gallery", "", "Name of the gallery to be unarchived.")
-	blogUnarchiveFlag := unarchiveCommand.String("blog", "", "Name of the blog post to be unarchived.")
 
 	postCommand := flag.NewFlagSet("post", flag.ExitOnError)
 	pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
-	blogPostFlag := postCommand.String("blog", "", "Name of the page to be posted.")
 
 	unpostCommand := flag.NewFlagSet("unpost", flag.ExitOnError)
 	pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
-	blogUnpostFlag := unpostCommand.String("blog", "", "Name of the page to be unposted.")
-
-	updateCommand := flag.NewFlagSet("update", flag.ExitOnError)
-	languageAddFlag := updateCommand.String("addlang", "", "Name of the language to be added.")
-	languageMigFlag := updateCommand.String("miglang", "", "Migrate to a multilanguage site. Provide the primary language as a parameter.")
 
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
@@ -89,24 +80,16 @@ func main() {
 		fmt.Println(" create")
 		fmt.Println("   -page       Creates a new page")
 		fmt.Println("   -gallery    Create a new gallery")
-		fmt.Println("   -blog       Create a new blog post\n")
 		fmt.Println(" post")
 		fmt.Println("   -page       Posts a page")
-		fmt.Println("   -blog       Posts a blog post\n")
 		fmt.Println(" unpost")
 		fmt.Println("   -page       Unposts a page")
-		fmt.Println("   -blog       Unposts a blog post\n")
 		fmt.Println(" archive")
 		fmt.Println("   -page       Archives a page")
 		fmt.Println("   -gallery    Archives a gallery")
-		fmt.Println("   -blog       Archives a blog post\n")
 		fmt.Println(" unarchive")
 		fmt.Println("   -page       Unarchives a page")
 		fmt.Println("   -gallery    Unarchives a gallery")
-		fmt.Println("   -blog       Unarchives a blog post\n")
-		fmt.Println(" update")
-		fmt.Println("   -miglang    Migrate to a multilanguage site")
-		fmt.Println("   -addlang    Adds a language\n")
 		return
 	}
 
@@ -118,7 +101,7 @@ func main() {
 		startTime := time.Now()
 		render_site()
 		endTime := time.Now()
-        fmt.Println("Elapsed time:", endTime.Sub(startTime))
+		fmt.Println("Elapsed time:", endTime.Sub(startTime))
 	case "watch":
 		autorender_site()
 	case "create":
@@ -128,94 +111,61 @@ func main() {
 	case "unarchive":
 		unarchiveCommand.Parse(os.Args[2:])
 	case "list":
-	    sourcelist()
+		sourcelist()
 	case "post":
 		postCommand.Parse(os.Args[2:])
 	case "unpost":
 		unpostCommand.Parse(os.Args[2:])
-	case "update":
-		updateCommand.Parse(os.Args[2:])
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
 	}
 
 	if createCommand.Parsed() {
-		if *pageCreateFlag == "" && *galleryCreateFlag == "" && *blogCreateFlag == "" {
-			fmt.Println("Please provide the page, gallery or blog name using -page, -gallery or -blog parameter.")
+		if *pageCreateFlag == "" && *galleryCreateFlag == "" {
+			fmt.Println("Please provide the page or gallery name using -page or -gallery parameter.")
 		} else if *pageCreateFlag != "" {
-        	create_page(*pageCreateFlag)
-        	fmt.Println(*pageCreateFlag)
+			create_page(*pageCreateFlag)
+			fmt.Println(*pageCreateFlag)
 		} else if *galleryCreateFlag != "" {
-        	create_gallery(*galleryCreateFlag)
-		} else if *blogCreateFlag != "" {
-        	create_blog(*blogCreateFlag)
-        }
-    }
+			create_gallery(*galleryCreateFlag)
+		}
+	}
 
 	if archiveCommand.Parsed() {
-		if *pageArchiveFlag == "" && *gallerypageArchiveFlag == "" && *blogArchiveFlag == ""{
-			fmt.Println("Please provide the page, blog or gallery name using -page, -blog or -gallery option.")
+		if *pageArchiveFlag == "" && *gallerypageArchiveFlag == "" {
+			fmt.Println("Please provide the page or blog name using -page or -gallery option.")
 		} else if *pageArchiveFlag != "" {
-            archive_page(*pageArchiveFlag)
-        } else if *gallerypageArchiveFlag != "" {
-            archive_gallery(*gallerypageArchiveFlag)
-        } else if *blogArchiveFlag != "" {
-            archive_blog(*blogArchiveFlag)
-        }
+			archive_page(*pageArchiveFlag)
+		} else if *gallerypageArchiveFlag != "" {
+			archive_gallery(*gallerypageArchiveFlag)
+		}
 	}
 
 	if unarchiveCommand.Parsed() {
-		if *pageUnarchiveFlag == "" && *gallerypageUnarchiveFlag == "" && *blogUnarchiveFlag == ""{
-			fmt.Println("Please provide the page, blog or gallery name using -page, -blog or -gallery option.")
+		if *pageUnarchiveFlag == "" && *gallerypageUnarchiveFlag == "" {
+			fmt.Println("Please provide the page or gallery name using -page, -blog or -gallery option.")
 		} else if *pageUnarchiveFlag != "" {
-            unarchive_page(*pageUnarchiveFlag)
-        } else if *gallerypageUnarchiveFlag != "" {
-            unarchive_gallery(*gallerypageUnarchiveFlag)
-        } else if *blogUnarchiveFlag != "" {
-            unarchive_blog(*blogUnarchiveFlag)
-        }
+			unarchive_page(*pageUnarchiveFlag)
+		} else if *gallerypageUnarchiveFlag != "" {
+			unarchive_gallery(*gallerypageUnarchiveFlag)
+		}
 	}
 
 	if postCommand.Parsed() {
-		if *pagePostFlag == "" && *blogPostFlag == "" {
-			fmt.Println("Please provide the page name using -page option or the blog post using -blog.")
+		if *pagePostFlag == "" {
+			fmt.Println("Please provide the page name using -page option.")
 		} else if *pagePostFlag != "" {
 			post(*pagePostFlag, "pages/")
-		} else if *blogPostFlag != "" {
-			post(*blogPostFlag, "pages/blogs/")
 		}
 	}
 
 	if unpostCommand.Parsed() {
-		if *pageUnpostFlag == "" && *blogUnpostFlag == "" {
-			fmt.Println("Please provide the page name using -page option or the blog post using -blog.")
+		if *pageUnpostFlag == "" {
+			fmt.Println("Please provide the page name using -page option")
 		} else if *pageUnpostFlag != "" {
 			unpost(*pageUnpostFlag, "pages/")
-		} else if *blogUnpostFlag != "" {
-			unpost(*blogUnpostFlag, "pages/blogs/")
 		}
 	}
-
-	if updateCommand.Parsed() {
-		if *languageAddFlag == "" && *languageMigFlag == "" {
-			fmt.Println("  -addlang string")
-        	fmt.Println("	Name of the language to be added.")
-  			fmt.Println("  -miglang string")
-        	fmt.Println("	Migrate to a multilanguage site. Provide the primary language as a parameter.")
-		} else if *languageAddFlag != "" && site.multiLang != true {
-			fmt.Println ("Site is not a multilanguage site. Please first migrate the site to a multilanguage site using the 'stare update -miglang <string>' command.")
-		} else if *languageMigFlag != "" && site.multiLang == true{
-			fmt.Println ("Site is already a multilanguage site.")
-		} else if *languageAddFlag != "" && site.multiLang == true {
-			addLanguage(*languageAddFlag)
-		} else if *languageMigFlag != "" && site.multiLang != true{
-			migLanguage(*languageMigFlag)
-		}
-	}
-
-}
-
-func loadConfig () {
 
 }

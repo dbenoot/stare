@@ -12,212 +12,230 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-
 // Basic functions
-
 
 package main
 
 import (
-    "io"
-    "os"
-    "fmt"
-    "log"
-    "strings"
-    "io/ioutil"
-    "strconv"
-    )
-    
-func move (inputname, outputname string) {
-       err :=  os.Rename(inputname, outputname)
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"strconv"
+	"strings"
+)
 
-       if err != nil {
-           fmt.Println("Page or gallery could not be moved. Please check standard folder structure.")
-           return
-       }
+func move(inputname, outputname string) {
+	err := os.Rename(inputname, outputname)
+
+	if err != nil {
+		fmt.Println("Page or gallery could not be moved. Please check standard folder structure.")
+		return
+	}
 }
 
 func copydir(source string, dest string) (err error) {
 
-     // get properties of source dir
-     sourceinfo, err := os.Stat(source)
-     if err != nil {
-         return err
-     }
+	// get properties of source dir
+	sourceinfo, err := os.Stat(source)
+	if err != nil {
+		return err
+	}
 
-     // create dest dir
+	// create dest dir
 
-     err = os.MkdirAll(dest, sourceinfo.Mode())
-     if err != nil {
-         return err
-     }
+	err = os.MkdirAll(dest, sourceinfo.Mode())
+	if err != nil {
+		return err
+	}
 
-     directory, _ := os.Open(source)
+	directory, _ := os.Open(source)
 
-     objects, err := directory.Readdir(-1)
+	objects, err := directory.Readdir(-1)
 
-     for _, obj := range objects {
+	for _, obj := range objects {
 
-         sourcefilepointer := source + "/" + obj.Name()
+		sourcefilepointer := source + "/" + obj.Name()
 
-         destinationfilepointer := dest + "/" + obj.Name()
+		destinationfilepointer := dest + "/" + obj.Name()
 
+		if obj.IsDir() {
+			// create sub-directories - recursively
+			err = copydir(sourcefilepointer, destinationfilepointer)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			// perform copy
+			err = copyfile(sourcefilepointer, destinationfilepointer)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 
-         if obj.IsDir() {
-             // create sub-directories - recursively
-             err = copydir(sourcefilepointer, destinationfilepointer)
-             if err != nil {
-                 fmt.Println(err)
-             }
-         } else {
-             // perform copy
-             err = copyfile(sourcefilepointer, destinationfilepointer)
-             if err != nil {
-                 fmt.Println(err)
-             }
-         }
-
-     }
-     return
- }
+	}
+	return
+}
 
 func movedir(source string, dest string) (err error) {
 
-     // get properties of source dir
-     sourceinfo, err := os.Stat(source)
-     if err != nil {
-         return err
-     }
+	// get properties of source dir
+	sourceinfo, err := os.Stat(source)
+	if err != nil {
+		return err
+	}
 
-     // create dest dir
+	// create dest dir
 
-     err = os.MkdirAll(dest, sourceinfo.Mode())
-     if err != nil {
-         return err
-     }
+	err = os.MkdirAll(dest, sourceinfo.Mode())
+	if err != nil {
+		return err
+	}
 
-     directory, _ := os.Open(source)
+	directory, _ := os.Open(source)
 
-     objects, err := directory.Readdir(-1)
+	objects, err := directory.Readdir(-1)
 
-     for _, obj := range objects {
+	for _, obj := range objects {
 
-         sourcefilepointer := source + "/" + obj.Name()
+		sourcefilepointer := source + "/" + obj.Name()
 
-         destinationfilepointer := dest + "/" + obj.Name()
+		destinationfilepointer := dest + "/" + obj.Name()
 
+		if obj.IsDir() {
+			// create sub-directories - recursively
+			err = copydir(sourcefilepointer, destinationfilepointer)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			// perform copy
+			err = copyfile(sourcefilepointer, destinationfilepointer)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 
-         if obj.IsDir() {
-             // create sub-directories - recursively
-             err = copydir(sourcefilepointer, destinationfilepointer)
-             if err != nil {
-                 fmt.Println(err)
-             }
-         } else {
-             // perform copy
-             err = copyfile(sourcefilepointer, destinationfilepointer)
-             if err != nil {
-                 fmt.Println(err)
-             }
-         }
+	}
 
-     }
-     
-    // Remove the temporary files 
-        
-    os.RemoveAll(source)
-    
-    return
- }
+	// Remove the temporary files
+
+	os.RemoveAll(source)
+
+	return
+}
 
 func copyfile(source string, dest string) (err error) {
-     sourcefile, err := os.Open(source)
-     if err != nil {
-         return err
-     }
+	sourcefile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
 
-     defer sourcefile.Close()
+	defer sourcefile.Close()
 
-     destfile, err := os.Create(dest)
-     if err != nil {
-         return err
-     }
+	destfile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
 
-     defer destfile.Close()
+	defer destfile.Close()
 
-     _, err = io.Copy(destfile, sourcefile)
-     if err == nil {
-         sourceinfo, err := os.Stat(source)
-         if err != nil {
-             err = os.Chmod(dest, sourceinfo.Mode())
-         }
+	_, err = io.Copy(destfile, sourcefile)
+	if err == nil {
+		sourceinfo, err := os.Stat(source)
+		if err != nil {
+			err = os.Chmod(dest, sourceinfo.Mode())
+		}
 
-     }
+	}
 
-     return
- }
- 
-func substitute (file, tie, replacetext string) {
-        input, err := ioutil.ReadFile(file)
-        if err != nil {
-                log.Fatalln(err)
-        }
-
-        lines := strings.Split(string(input), "\n")
-
-        for line := range lines {
-                lines[line] = strings.Replace(lines[line], tie, replacetext, -1)
-        }
-        
-        output := strings.Join(lines, "\n")
-        err = ioutil.WriteFile(file, []byte(output), 0644)
-        if err != nil {
-                log.Fatalln(err)
-        } 
+	return
 }
 
-func substitute_in_header (file, tie, replacetext string) {
-        input, err := ioutil.ReadFile(file)
-        if err != nil {
-                log.Fatalln(err)
-        }
+func substitute(file, tie, replacetext string) {
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-        lines := strings.Split(string(input), "\n")
+	lines := strings.Split(string(input), "\n")
 
-        for line := 0; line < 6; line++ {
-                lines[line] = strings.Replace(lines[line], tie, replacetext, -1)
-        }
-        
-        output := strings.Join(lines, "\n")
-        err = ioutil.WriteFile(file, []byte(output), 0644)
-        if err != nil {
-                log.Fatalln(err)
-        } 
+	for line := range lines {
+		lines[line] = strings.Replace(lines[line], tie, replacetext, -1)
+	}
+
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(file, []byte(output), 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
-func findItem (items []string) (item string) {
-    
-    var itemId int
-    
-    if len(items) == 1 {
-        itemId = 0
-    } else {
-    
-        for i := 0; i < len(items); i++ {
-            fmt.Println(strconv.Itoa(i) + " - "+items[i])
-        }
-        fmt.Println("Select the correct item:")
-        if _, err := fmt.Scanf("%d", &itemId); err != nil {
-            fmt.Printf("%s\n", err)
-        }
-    }
-    
-    if itemId >= len(items) {
-        fmt.Println("Item does not exist.")
-        return
-    } else {
-        return items[itemId]
-    }
-    
-    return
+func substitute_in_header(file, tie, replacetext string) {
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	lines := strings.Split(string(input), "\n")
+
+	for line := 0; line < 6; line++ {
+		lines[line] = strings.Replace(lines[line], tie, replacetext, -1)
+	}
+
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(file, []byte(output), 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func findItem(items []string) (item string) {
+
+	var itemId int
+
+	if len(items) == 1 {
+		itemId = 0
+	} else {
+
+		for i := 0; i < len(items); i++ {
+			fmt.Println(strconv.Itoa(i) + " - " + items[i])
+		}
+		fmt.Println("Select the correct item:")
+		if _, err := fmt.Scanf("%d", &itemId); err != nil {
+			fmt.Printf("%s\n", err)
+		}
+	}
+
+	if itemId >= len(items) {
+		fmt.Println("Item does not exist.")
+		return
+	} else {
+		return items[itemId]
+	}
+
+	return
+}
+
+func prepend(text, file string) {
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	lines := strings.Split(string(input), "\n")
+	new_lines := append([]string{text}, lines...)
+
+	output := strings.Join(new_lines, "\n")
+	err = ioutil.WriteFile(file, []byte(output), 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
