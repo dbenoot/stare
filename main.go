@@ -75,7 +75,6 @@ func main() {
 		fmt.Println("The most commonly used stare commands are: \n")
 		fmt.Println(" init          Initialize a stare website.\n")
 		fmt.Println(" render        Renders the website.\n")
-		fmt.Println(" watch         Renders the website on file changes.\n")
 		fmt.Println(" list          Lists all pages, blog posts and galleries.\n")
 		fmt.Println(" create")
 		fmt.Println("   -page       Creates a new page")
@@ -102,8 +101,6 @@ func main() {
 		render_site()
 		endTime := time.Now()
 		fmt.Println("Elapsed time:", endTime.Sub(startTime))
-	case "watch":
-		autorender_site()
 	case "create":
 		createCommand.Parse(os.Args[2:])
 	case "archive":
@@ -125,10 +122,9 @@ func main() {
 		if *pageCreateFlag == "" && *galleryCreateFlag == "" {
 			fmt.Println("Please provide the page or gallery name using -page or -gallery parameter.")
 		} else if *pageCreateFlag != "" {
-			create_page(*pageCreateFlag)
-			fmt.Println(*pageCreateFlag)
+			createPage(*pageCreateFlag)
 		} else if *galleryCreateFlag != "" {
-			create_gallery(*galleryCreateFlag)
+			createGallery(*galleryCreateFlag)
 		}
 	}
 

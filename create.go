@@ -12,10 +12,9 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-
 // FUNCTIONS
 //
-//- create a page and add metadata to new page: 
+//- create a page and add metadata to new page:
 //    - date and time of creation
 //    - availability in the menu
 //    - order in the menu
@@ -26,123 +25,43 @@
 package main
 
 import (
-    "fmt"
-    "os"
-    "path/filepath"
-    "time"
-    "bufio"
-    //"log"
-    "strings"
+	"fmt"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 var now = time.Now().Format(time.RFC1123)
-var nowFile = time.Now().Format(time.RFC3339)
 
-func createPage (pagename string, languagedir string) {
+func createPage(pagename string) {
 
-    copyfile("." + string(filepath.Separator) + "templates" + string(filepath.Separator) + "page_template.html", "." + string(filepath.Separator) + "pages" + string(filepath.Separator) + languagedir + string(filepath.Separator) + pagename + ".html")
+	file := filepath.Join("bodies", "pages", pagename+".html")
 
-    
-    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+languagedir+"/"+pagename+".html")
-    
-    var menuyn string
-    fmt.Println("Present in menubar (y/n)")
-            if _, err := fmt.Scanf("%s", &menuyn); err != nil {
-            fmt.Printf("%s\n", err)
-            return
-        }
-        if menuyn == "y" {
-                var menuorder string
-                    fmt.Println("Place in menubar (0-9)")
-                    if _, err := fmt.Scanf("%s", &menuorder); err != nil {
-                        fmt.Printf("%s\n", err)
-                    return
-                    }
-                var menuname string
-                    fmt.Println("Name of page in the menubar")
-                    reader := bufio.NewReader(os.Stdin)
-                    menuname, _ = reader.ReadString('\n')
-                    menuname = strings.TrimSpace(menuname)
- 
-            prepend("menu name       : "+menuname, "pages/"+languagedir+"/"+pagename+".html")
-            prepend("menu order      : "+menuorder, "pages/"+languagedir+"/"+pagename+".html")
-            prepend("present in menu : y", "pages/"+languagedir+"/"+pagename+".html")
-        } else {
-            prepend("present in menu : n\nmenu order      : nap\nmenu name       : nap", "pages/"+languagedir+"/"+pagename+".html")
-        }
+	if Exists(file) {
+		fmt.Println("Page already exists.")
+	} else {
 
-    prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/"+languagedir+"/"+pagename+".html")
+		f, err := os.Create(file)
+		check(err)
+		defer f.Close()
 
+		content := "------------------------------------------------------------------------\ncreated on      : " + now + "\npresent in menu : n\nmenu order      : 0\nmenu name       : " + pagename + "\nstatus          : draft\n------------------------------------------------------------------------"
+
+		_, err = f.WriteString(content)
+	}
 }
 
-func createBlog (blogName string, languagedir string) {
-    
-    if _, err := os.Stat("pages/"+languagedir+"/blogs/"); os.IsNotExist(err) {
-        os.MkdirAll(filepath.Join("pages",languagedir,"blogs"), 0755)
-    }
-    
-    filename := nowFile+"-"+blogName+".md"
-    
-    os.Create("pages/"+languagedir+"/blogs/"+filename)
-    
-    prepend("status          : in_draft\n------------------------------------------------------------------------", "pages/"+languagedir+"/blogs/"+filename)
-    prepend("taxonomies      : ", "pages/"+languagedir+"/blogs/"+filename)
-    prepend("created by      : ", "pages/"+languagedir+"/blogs/"+filename)
-    prepend("created on      : "+now, "pages/"+languagedir+"/blogs/"+filename)
-    prepend("title           : ", "pages/"+languagedir+"/blogs/"+filename)
-    prepend("------------------------------------------------------------------------", "pages/"+languagedir+"/blogs/"+filename)
+func createGallery(galleryname string) {
+
+	fmt.Println("Creating gallery " + galleryname)
+	os.MkdirAll(filepath.Join("bodies", "galleries", galleryname), os.ModePerm)
 }
 
-func create_page (pageName string) {
-
-    fmt.Println("Creating page " + pageName)
-    if site.multiLang == true {
-        for i := 0; i < len(site.languages); i++ {
-            fmt.Println(site.languages[i])
-            
-            os.MkdirAll("pages" + string(filepath.Separator) + site.languages[i] ,0755)
-            createPage(pageName, site.languages[i])
-        }
-    } else {
-        languagedir := ""
-        createPage(pageName, languagedir)
-    }
-}
-
-func create_blog (blogName string) {
-
-    fmt.Println("Creating blog " + blogName)
-    if site.multiLang == true {
-        for i := 0; i < len(site.languages); i++ {
-
-            createBlog(blogName, site.languages[i])
-        }
-    } else {
-        languagedir := ""
-        createBlog(blogName, languagedir)
-    }
-}
-
-func create_gallery(galleryname string) {
-    
-    // create gallery.html content and sub-gallery htmls
-        
-    if _, err := os.Stat(site.pagedir+"/gallery.html"); os.IsNotExist(err) {
-            copyfile(site.templatedir+"/gallery_template.html", site.pagedir+"/gallery.html")
-            
-            cfg.Section("general").NewKey("gallery", "y")
-            cfg.SaveTo("config.ini")
-            
-            now := time.Now().Format(time.RFC1123)
-            prepend("status          : posted\n------------------------------------------------------------------------", "pages/gallery.html")    
-            prepend("menu name       : gallery", "pages/gallery.html")
-            prepend("menu order      : 10", "pages/gallery.html")
-            prepend("present in menu : y", "pages/gallery.html")
-            prepend("------------------------------------------------------------------------\ncreated on      : "+now, "pages/gallery.html")
-    }
-    
-    // Create new gallery
-    
-    fmt.Println("Creating gallery " + galleryname)
-    os.MkdirAll("pages" + string(filepath.Separator) + "gallery" + string(filepath.Separator) + galleryname ,0755)
+func Exists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }
