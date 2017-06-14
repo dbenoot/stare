@@ -17,14 +17,139 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/russross/blackfriday"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"text/template"
 )
+
+func mapBodies(path string) map[string]string {
+
+	bodies := make(map[string]string)
+	formats := []string{"html", "HTML", "md", "MD"}
+
+	files := []string{}
+	err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
+		files = append(files, path)
+		return nil
+	})
+
+	for _, file := range files {
+		if stringInSlice(strings.Split(file, ".")[len(strings.Split(file, "."))-1], formats) == true {
+			content, _ := ioutil.ReadFile(file)
+			bodies[file] = string(content)
+		}
+	}
+	if err != nil {
+		fmt.Println(err)
+	}
+	return bodies
+}
+
+func mapPages(bodies map[string]string) map[int]Page {
+
+	var content_temp string
+	c := make(map[int]Page)
+	i := 0
+	for key, value := range bodies {
+
+		t := c[i]
+
+		t.menu_present, t.menu_order, t.menu_name, t.posted, t.time, content_temp = parsePage(value)
+
+		t.filetype = strings.ToLower(filepath.Ext(key))
+
+		t.body_path, _ = filepath.Rel("", key)
+		t.path = strings.Replace(t.body_path, "bodies"+string(filepath.Separator), "", 1)
+
+		// define the relative path
+
+		if strings.Contains(filepath.Dir(t.path), "pages") {
+			t.rel_path = filepath.Join("..")
+		} else {
+			t.rel_path = filepath.Join(".")
+		}
+
+		// define the base_path
+
+		t.base_path, t.filename = filepath.Split(t.path)
+
+		// define the location of the index relative to the page
+
+		t.index = filepath.Join(t.rel_path, "index.html")
+
+		// Render md to html
+
+		if t.filetype == ".md" {
+
+			// change path to .html
+
+			t.path = t.path[0:len(t.path)-len(t.filetype)] + ".html"
+
+			// change output filename to .html
+
+			t.filename = t.filename[0:len(t.filename)-len(t.filetype)] + ".html"
+
+			// Render markdown to html
+
+			content_temp2 := blackfriday.MarkdownCommon([]byte(content_temp))
+			content_temp = string(content_temp2)
+		}
+
+		content, err := template.New("body").Parse(content_temp)
+		check(err)
+		w := bytes.NewBufferString("")
+		content.Execute(w, map[string]string{"Css": filepath.Join(t.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(t.rel_path, "js") + string(filepath.Separator), "Index": t.index, "Img": filepath.Join(t.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(t.rel_path, "pages") + string(filepath.Separator)})
+
+		t.content = w.String()
+
+		fmt.Println(t.path, t.filename, t.filetype)
+
+		c[i] = t
+		i++
+	}
+	return c
+}
+
+func parsePage(input string) (bool, int, string, bool, string, string) {
+
+	var menu_present, posted bool
+	var menu_order int
+	var menu_name, time, content string
+
+	lines := strings.Split(string(input), "\n")
+
+	for j := 1; j < 6; j++ {
+		if strings.Contains(lines[j], "posted") == true {
+			posted = true
+		}
+		if strings.Contains(lines[j], "present in menu") == true && strings.TrimSpace(strings.Split(lines[j], ":")[1]) == "y" {
+			menu_present = true
+		}
+		if strings.Contains(lines[j], "menu order") == true {
+			menu_order, _ = strconv.Atoi(strings.TrimSpace(strings.Split(lines[j], ":")[1]))
+		}
+		if strings.Contains(lines[j], "menu name") == true {
+			menu_name = strings.TrimSpace(strings.Split(lines[j], ":")[1])
+		}
+		if strings.Contains(lines[j], "created on") == true {
+			time = strings.TrimSpace(strings.Split(lines[j], ":")[1])
+		}
+	}
+
+	for i := 7; i < len(lines); i++ {
+		content = content + lines[i] + "\n"
+	}
+
+	return menu_present, menu_order, menu_name, posted, time, content
+
+}
 
 func move(inputname, outputname string) {
 	err := os.Rename(inputname, outputname)
@@ -155,9 +280,7 @@ func copyfile(source string, dest string) (err error) {
 
 func substitute(file, tie, replacetext string) {
 	input, err := ioutil.ReadFile(file)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	check(err)
 
 	lines := strings.Split(string(input), "\n")
 
@@ -167,28 +290,38 @@ func substitute(file, tie, replacetext string) {
 
 	output := strings.Join(lines, "\n")
 	err = ioutil.WriteFile(file, []byte(output), 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	check(err)
 }
 
-func substitute_in_header(file, tie, replacetext string) {
-	input, err := ioutil.ReadFile(file)
-	if err != nil {
-		log.Fatalln(err)
+func replaceInHeader(f, o, n string) {
+	input, err := ioutil.ReadFile(f)
+	check(err)
+
+	lines := strings.Split(string(input), "\n")
+
+	for i, line := range lines {
+		if strings.Contains(line, o) {
+			lines[i] = n
+		}
 	}
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(f, []byte(output), 0644)
+	check(err)
+}
+
+func substitute_in_header(file, o, n string) {
+	input, err := ioutil.ReadFile(file)
+	check(err)
 
 	lines := strings.Split(string(input), "\n")
 
 	for line := 0; line < 6; line++ {
-		lines[line] = strings.Replace(lines[line], tie, replacetext, -1)
+		lines[line] = strings.Replace(lines[line], o, n, -1)
 	}
 
 	output := strings.Join(lines, "\n")
 	err = ioutil.WriteFile(file, []byte(output), 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	check(err)
 }
 
 func findItem(items []string) (item string) {
@@ -218,20 +351,13 @@ func findItem(items []string) (item string) {
 	return
 }
 
-func prepend(text, file string) {
-	input, err := ioutil.ReadFile(file)
-	if err != nil {
-		log.Fatalln(err)
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
 	}
-
-	lines := strings.Split(string(input), "\n")
-	new_lines := append([]string{text}, lines...)
-
-	output := strings.Join(new_lines, "\n")
-	err = ioutil.WriteFile(file, []byte(output), 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	return false
 }
 
 func check(e error) {

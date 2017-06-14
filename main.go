@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"github.com/go-ini/ini"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -42,7 +43,33 @@ var site = Site{
 	gallery:     cfg.Section("general").Key("gallery").MustBool(),
 }
 
-// define Site
+// define Page, Nav, Site
+
+type Page struct {
+	filename     string
+	filetype     string
+	time         string
+	menu_present bool
+	menu_order   int
+	menu_name    string
+	posted       bool
+	content      string
+	body_path    string
+	path         string
+	navbar       string
+	output       string
+	rel_path     string
+	base_path    string
+	index        string
+}
+
+type Nav struct {
+	path      string
+	name      string
+	orig_key  int
+	base_path string
+	filename  string
+}
 
 type Site struct {
 	pagedir, blogdir, srcdir, gallerydir, templatedir, primaryLang string
@@ -64,18 +91,17 @@ func main() {
 	pageUnarchiveFlag := unarchiveCommand.String("page", "", "Name of the page to be unarchived.")
 	gallerypageUnarchiveFlag := unarchiveCommand.String("gallery", "", "Name of the gallery to be unarchived.")
 
-	postCommand := flag.NewFlagSet("post", flag.ExitOnError)
-	pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
+	// postCommand := flag.NewFlagSet("post", flag.ExitOnError)
+	// pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
 
-	unpostCommand := flag.NewFlagSet("unpost", flag.ExitOnError)
-	pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
+	// unpostCommand := flag.NewFlagSet("unpost", flag.ExitOnError)
+	// pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
 
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
 		fmt.Println("The most commonly used stare commands are: \n")
 		fmt.Println(" init          Initialize a stare website.\n")
 		fmt.Println(" render        Renders the website.\n")
-		fmt.Println(" list          Lists all pages, blog posts and galleries.\n")
 		fmt.Println(" create")
 		fmt.Println("   -page       Creates a new page")
 		fmt.Println("   -gallery    Create a new gallery")
@@ -107,12 +133,13 @@ func main() {
 		archiveCommand.Parse(os.Args[2:])
 	case "unarchive":
 		unarchiveCommand.Parse(os.Args[2:])
+	case "post":
+		post(os.Args[2:], "bodies/")
+		//postCommand.Parse(os.Args[2:])
+	case "unpost":
+		unpost(os.Args[2:], "bodies/")
 	case "list":
 		sourcelist()
-	case "post":
-		postCommand.Parse(os.Args[2:])
-	case "unpost":
-		unpostCommand.Parse(os.Args[2:])
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
@@ -122,7 +149,7 @@ func main() {
 		if *pageCreateFlag == "" && *galleryCreateFlag == "" {
 			fmt.Println("Please provide the page or gallery name using -page or -gallery parameter.")
 		} else if *pageCreateFlag != "" {
-			createPage(*pageCreateFlag)
+			createPage(filepath.Join("bodies", "pages"), *pageCreateFlag)
 		} else if *galleryCreateFlag != "" {
 			createGallery(*galleryCreateFlag)
 		}
@@ -147,21 +174,4 @@ func main() {
 			unarchive_gallery(*gallerypageUnarchiveFlag)
 		}
 	}
-
-	if postCommand.Parsed() {
-		if *pagePostFlag == "" {
-			fmt.Println("Please provide the page name using -page option.")
-		} else if *pagePostFlag != "" {
-			post(*pagePostFlag, "pages/")
-		}
-	}
-
-	if unpostCommand.Parsed() {
-		if *pageUnpostFlag == "" {
-			fmt.Println("Please provide the page name using -page option")
-		} else if *pageUnpostFlag != "" {
-			unpost(*pageUnpostFlag, "pages/")
-		}
-	}
-
 }
