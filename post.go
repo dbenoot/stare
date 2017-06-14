@@ -12,47 +12,92 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-
 // Post draft pages in production
 // Unpost production pages to draft
 
 package main
 
 import (
-    "path/filepath"
-    "fmt"
-    "strings"
-    )
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 var itemId int
 
-func post (name string, path string) {
-    
-    items, _ := filepath.Glob(path+"*"+name+"*")
+func post(name []string, path string) {
+	var items []string
+	bodies := mapBodies(path)
+	pages := mapPages(bodies)
+	for _, vn := range name {
+		for _, vp := range pages {
+			if strings.Contains(vp.path, vn) {
+				items = append(items, vp.body_path)
+			}
+		}
 
-    // Select the correct item in case of name ambiguity
+		item := findItem(items)
 
-    item := findItem(items)
-    
-    if len(item) > 0 {
-        filename := strings.Split(item,"/")[len(strings.Split(item,"/"))-1]
-        fmt.Println("Posting", filename)
-        substitute_in_header(item, "in_draft", "posted")
-    }
-    
+		if len(item) > 0 {
+			fmt.Println("Posting", item)
+			replaceInHeader(item, "status          : ", "status          : posted")
+		}
+
+	}
+
 }
 
-func unpost (name string, path string) {
-    
-    items, _ := filepath.Glob(path+"*"+name+"*")
+func unpost(name []string, path string) {
+	var items []string
+	bodies := mapBodies(path)
+	pages := mapPages(bodies)
+	for _, vn := range name {
+		for _, vp := range pages {
+			if strings.Contains(vp.path, vn) {
+				items = append(items, vp.body_path)
+			}
+		}
+	}
 
-    // Select the correct item in case of name ambiguity
-    
-    item := findItem(items)
-    
-    if len(item) > 0 {
-        filename := strings.Split(item,"/")[len(strings.Split(item,"/"))-1]
-        fmt.Println("Unposting", filename)
-        substitute_in_header(item, "posted", "in_draft")
-    }
+	item := findItem(items)
+	fmt.Println(items, ":", item)
+
+	if len(item) > 0 {
+		filename := strings.Split(item, "/")[len(strings.Split(item, "/"))-1]
+		fmt.Println("Posting", filename)
+		replaceInHeader(item, "status          : posted", "status          : draft")
+	}
+}
+
+func getFiles(path string) []string {
+	formats := []string{".html", ".HTML", ".md", ".MD"}
+	allfiles := []string{}
+	files := []string{}
+	err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
+		allfiles = append(allfiles, path)
+		return nil
+	})
+	check(err)
+
+	for _, file := range allfiles {
+		if stringInSlice(filepath.Ext(file), formats) == true {
+			files = append(files, file)
+		}
+	}
+
+	return files
+}
+
+func createContainsArray(n []string, f []string) []string {
+	var of []string
+	for _, a := range n {
+		for _, b := range f {
+			if b == a {
+				of = append(of, b)
+			}
+		}
+	}
+	return of
+
 }
