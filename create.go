@@ -33,9 +33,9 @@ import (
 
 var now = time.Now().Format(time.RFC1123)
 
-func createPage(pagename string) {
+func createPage(path string, pagename string) {
 
-	file := filepath.Join("bodies", "pages", pagename+".html")
+	file := filepath.Join(path, pagename+".html")
 
 	if Exists(file) {
 		fmt.Println("Page already exists.")
