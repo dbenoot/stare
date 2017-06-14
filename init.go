@@ -36,7 +36,7 @@ func init_site() {
 
 		createFolders()
 		createTemplates()
-
+		createPage("bodies", "index")
 		fmt.Println("Congratulations! You have initiated your new website.")
 
 	}
