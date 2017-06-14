@@ -43,7 +43,7 @@ func init_site() {
 }
 
 func checkSiteNotExist() bool {
-	ok, err := IsDirEmpty("./")
+	ok, err := isDirEmpty("./")
 	check(err)
 
 	return ok
@@ -60,8 +60,6 @@ func checkSiteNotExist() bool {
 
 // }
 
-//TODO: create index.html with correct Stare header
-
 func createFolders() {
 	for i := 0; i < len(dirs); i++ {
 		os.MkdirAll(dirs[i], 0755)
@@ -74,7 +72,7 @@ func createTemplates() {
 	}
 }
 
-func IsDirEmpty(name string) (bool, error) {
+func isDirEmpty(name string) (bool, error) {
 	f, err := os.Open(name)
 	if err != nil {
 		return false, err
@@ -109,7 +107,7 @@ var templ = map[string]string{
 }
 
 var dirs = []string{
-	filepath.Join("archive", "bodies"),
+	filepath.Join("archive", "bodies", "pages"),
 	filepath.Join("archive", "galleries"),
 	filepath.Join("src", "css"),
 	filepath.Join("src", "js"),
