@@ -33,11 +33,11 @@ import (
 
 var now = time.Now().Format(time.RFC1123)
 
-func createPage(path string, pagename string) {
+func createPage(path string, pagename string, extra string) {
 
 	file := filepath.Join(path, pagename+".html")
 
-	if Exists(file) {
+	if exists(file) {
 		fmt.Println("Page already exists.")
 	} else {
 
@@ -45,23 +45,13 @@ func createPage(path string, pagename string) {
 		check(err)
 		defer f.Close()
 
-		content := "------------------------------------------------------------------------\ncreated on      : " + now + "\npresent in menu : n\nmenu order      : 0\nmenu name       : " + pagename + "\nstatus          : draft\n------------------------------------------------------------------------"
+		content := "------------------------------------------------------------------------\ncreated on      : " + now + "\npresent in menu : n\nmenu order      : 0\nmenu name       : " + pagename + "\nstatus          : draft\n------------------------------------------------------------------------" + extra
 
 		_, err = f.WriteString(content)
 	}
 }
 
 func createGallery(galleryname string) {
-
 	fmt.Println("Creating gallery " + galleryname)
 	os.MkdirAll(filepath.Join("bodies", "galleries", galleryname), os.ModePerm)
-}
-
-func Exists(name string) bool {
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-	}
-	return true
 }

@@ -39,13 +39,7 @@ func sourcelist() {
 }
 
 func list(folder string) {
-    
-    filepath.Walk("bodies", checkStatus)
-// 	files, _ := filepath.Glob(folder)
-
-// 	for i := 0; i < len(files); i++ {
-// 		fmt.Println(i, " - ", files[i], checkStatus(files[i]))
-//     }
+	filepath.Walk("bodies", checkStatus)
 }
 
 func listdir(folder string) {
@@ -53,35 +47,35 @@ func listdir(folder string) {
 
 	i := 1
 	for _, f := range files {
-		fmt.Println(f.Name())
+		fmt.Println("- ", f.Name())
 		i++
 	}
 }
 
 func visit(path string, f os.FileInfo, err error) error {
-  fmt.Printf("Visited: %s\n", path)
-  return nil
-} 
+	fmt.Printf("Visited: %s\n", path)
+	return nil
+}
 
 func checkStatus(file string, f os.FileInfo, err error) error {
 	fi, err := os.Stat(file)
-    check(err)
-	
+	check(err)
+
 	if fi.IsDir() == false {
-	
-    	input, err := ioutil.ReadFile(file)
-    	check(err)
-    
-    	lines := strings.Split(string(input), "\n")
-    
-    	for j := 1; j < 6; j++ {
-    		if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == true {
-    			fmt.Println(file, " - posted")
-    		} else if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == false{
-        	    fmt.Println(file, " - draft")
-        	}
-    	} 
+
+		input, err := ioutil.ReadFile(file)
+		check(err)
+
+		lines := strings.Split(string(input), "\n")
+
+		for j := 1; j < 6; j++ {
+			if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == true {
+				fmt.Println("- ", file, " \t posted")
+			} else if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == false {
+				fmt.Println("- ", file, " \t draft")
+			}
+		}
 	}
-	
+
 	return nil
 }

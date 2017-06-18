@@ -32,11 +32,11 @@ func init_site() {
 	} else {
 
 		// TODO add personal {{.xxx}} template items in config file?
-		// createConfigFile()
 
+		// createConfigFile()
 		createFolders()
 		createTemplates()
-		createPage("bodies", "index")
+		createPage("bodies", "index", "")
 		fmt.Println("Congratulations! You have initiated your new website.")
 
 	}
@@ -51,12 +51,12 @@ func checkSiteNotExist() bool {
 
 // func createConfigFile() {
 
-//     output := "[general]\nmultiple_language_support = \nprimary_language = \nlanguages = \ngallery = "
+// 	output := "[general]\ngallery = n\ngallery_name = \n\n[ties]"
 
-//     err := ioutil.WriteFile("config.ini", []byte(output), 0644)
-//     if err != nil {
-//             log.Fatalln(err)
-//     }
+// 	err := ioutil.WriteFile("config.ini", []byte(output), 0644)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
 
 // }
 
@@ -96,14 +96,14 @@ func initTemplate(filename string, filecontent string) {
 
 var templ = map[string]string{
 	"footer_template.html": "",
-	"gallery_item.html": "					<div>\n						<a href=\"{{.SUBGALLERYLINK}}\">\n						<div><img src=\"{{.SUBGALLERYTHUMB}}\"></div>\n						<div><h3>{{.SUBGALLERYNAME}}</h3></div>\n						</a>\n					</div>\n{{.GALLERYITEM}}",
-	"gallery_template.html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>{{.TITLE}}</title>\n  </head>\n  \n  <body>\n    \n{{.NAVBAR}}\n\n 		<div>\n{{.GALLERYITEM}}\n    </div>\n\n{{.FOOTER}}\n\n  </body>\n</html>",
+	"gallery_item.html":    "<div><a href=\"{{.Subgallerylink}}\"><div><img src=\"{{.Subgallerythumb}}\"></div><div><h3>{{.Subgalleryname}}</h3></div></a></div>",
+	// "gallery_template.html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>{{.TITLE}}</title>\n  </head>\n  \n  <body>\n    \n{{.NAVBAR}}\n\n 		<div>\n{{.GALLERYITEM}}\n    </div>\n\n{{.FOOTER}}\n\n  </body>\n</html>",
 	"header_template.html": "",
 	"navbar_item.html": "					<li {{.Navactive}}><a href=\"{{.Navlink}}\">{{.Navitem}}</a></li>",
 	"navbar_template.html": "	<nav class=\"navbar navbar-default navbar-fixed-top\">\n		<div class=\"container-fluid\">\n			<div class=\"navbar-header\">\n				<button type=\"button\" class=\"navbar-toggle collapsed\" data-toggle=\"collapse\" data-target=\"#navbar\" aria-expanded=\"false\" aria-controls=\"navbar\">\n					<span class=\"sr-only\">Toggle navigation</span>\n					<span class=\"icon-bar\"></span>\n					<span class=\"icon-bar\"></span>\n					<span class=\"icon-bar\"></span>\n				</button>\n				<a class=\"navbar-brand\" href=\"#\">Stare Website</a>\n			</div>\n			<div id=\"navbar\" class=\"navbar-collapse collapse\">\n				<ul class=\"nav navbar-nav\">\n					{{.Navlist}}\n				</ul>\n				<ul class=\"nav navbar-nav navbar-right\">\n					<li><a href=\"#\">Item 1</a></li>\n					<li><a href=\"#\">Item 2</a></li>\n					<li><a href=\"#\">Item 3</a></li>\n				</ul>\n			</div>\n		</div>\n	</nav>",
 	"page_template.html":       "<!DOCTYPE html>\n<html>\n\n{{.Header}}\n  \n  <body>\n    \n{{.Navbar}}\n{{.Body}}\n\n{{.Footer}}\n \n  </body>\n</html>",
-	"subgallery_item.html":     "                <div><a href=\"{{.SUBIMAGE}}\"><img src=\"{{.SUBIMAGETHUMB}}\" width=\"350\" height=\"275\"></a></div>\n{{.SUBGALLERYITEM}}",
-	"subgallery_template.html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>{{.TITLE}}</title>\n  </head>\n  \n  <body>\n    \n    {{.NAVBAR}}\n    \n    <h1>{{.GALLERYTITLE}}</h1>\n    <a href=\"../gallery.html\">Back</a>\n    \n    {{.SUBGALLERYITEM}}\n    \n    {{.FOOTER}}\n    \n  </body>\n</html>",
+	"subgallery_item.html":     "<div><a href=\"{{.Subimage}}\"><img src=\"{{.Subimagethumb}}\" width=\"350\" height=\"275\"></a></div>\n",
+	"subgallery_template.html": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>{{.TITLE}}</title>\n  </head>\n  \n  <body>\n    \n    {{.Navbar}}\n    \n    <h1>{{.Gallerytitle}}</h1>\n    <a href=\"../gallery.html\">Back</a>\n    \n    {{.Subgalleryitem}}\n    \n    {{.Footer}}\n    \n  </body>\n</html>",
 }
 
 var dirs = []string{

@@ -14,17 +14,15 @@
 
 // Render all production pages and galleries
 
-// TODO
-
-// rewrite remove_header so it cuts on the second line consisting of ------
-
 package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
+	// "strings"
 	"text/template"
 )
 
@@ -36,6 +34,7 @@ func render_site() {
 	pages := mapPages(bodies)
 	pages = qPosted(pages)
 	pages = createNavbar(pages)
+	pages = createGalleryBody(pages)
 	pages = createOutput(pages)
 	writeOutput(pages)
 
@@ -102,6 +101,14 @@ func createNavbar(pages map[int]Page) map[int]Page {
 	return pages
 }
 
+func createGalleryBody(pages map[int]Page) map[int]Page {
+	for key, value := range pages {
+		fmt.Println(key, value.rel_path)
+	}
+
+	return pages
+	// map[string]string{"Subgallerylink":,"Subgallerythumb":,"Subgalleryname"}
+}
 func createOutput(pages map[int]Page) map[int]Page {
 
 	head, _ := template.ParseFiles("templates/header_template.html")
@@ -145,13 +152,21 @@ func writeOutput(pages map[int]Page) {
 
 	for i := 0; i < len(pages); i++ {
 
-		newPath := filepath.Join(".", "rendered", pages[i].path)
+		// var f *File
 
+		newPath := filepath.Join(".", "rendered", pages[i].path)
 		err := os.MkdirAll(filepath.Dir(newPath), os.ModePerm)
 		check(err)
-		f, _ := os.Create(newPath)
 
-		f.WriteString(pages[i].output)
+		_, err = os.Stat(newPath)
+		if err != nil {
+
+			f, err := os.Create(newPath)
+			check(err)
+			defer f.Close()
+
+			f.WriteString(pages[i].output)
+		}
 	}
 }
 

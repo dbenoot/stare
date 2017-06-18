@@ -19,85 +19,47 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 )
 
 var itemId int
 
-func post(name []string, path string) {
-	var items []string
-	bodies := mapBodies(path)
+func post(name []string) {
+
+	bodies := mapBodies("bodies")
 	pages := mapPages(bodies)
 	for _, vn := range name {
+		var items []string
 		for _, vp := range pages {
 			if strings.Contains(vp.path, vn) {
 				items = append(items, vp.body_path)
 			}
 		}
-
 		item := findItem(items)
 
 		if len(item) > 0 {
 			fmt.Println("Posting", item)
 			replaceInHeader(item, "status          : ", "status          : posted")
 		}
-
 	}
-
 }
 
-func unpost(name []string, path string) {
-	var items []string
-	bodies := mapBodies(path)
+func unpost(name []string) {
+
+	bodies := mapBodies("bodies")
 	pages := mapPages(bodies)
 	for _, vn := range name {
+		var items []string
 		for _, vp := range pages {
 			if strings.Contains(vp.path, vn) {
 				items = append(items, vp.body_path)
 			}
 		}
-	}
+		item := findItem(items)
 
-	item := findItem(items)
-	fmt.Println(items, ":", item)
-
-	if len(item) > 0 {
-		filename := strings.Split(item, "/")[len(strings.Split(item, "/"))-1]
-		fmt.Println("Posting", filename)
-		replaceInHeader(item, "status          : posted", "status          : draft")
-	}
-}
-
-func getFiles(path string) []string {
-	formats := []string{".html", ".HTML", ".md", ".MD"}
-	allfiles := []string{}
-	files := []string{}
-	err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
-		allfiles = append(allfiles, path)
-		return nil
-	})
-	check(err)
-
-	for _, file := range allfiles {
-		if stringInSlice(filepath.Ext(file), formats) == true {
-			files = append(files, file)
+		if len(item) > 0 {
+			fmt.Println("Unposting", item)
+			replaceInHeader(item, "status          : posted", "status          : ")
 		}
 	}
-
-	return files
-}
-
-func createContainsArray(n []string, f []string) []string {
-	var of []string
-	for _, a := range n {
-		for _, b := range f {
-			if b == a {
-				of = append(of, b)
-			}
-		}
-	}
-	return of
-
 }

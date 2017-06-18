@@ -83,38 +83,19 @@ func main() {
 	pageCreateFlag := createCommand.String("page", "", "Name of the new page.")
 	galleryCreateFlag := createCommand.String("gallery", "", "Name of the new gallery.")
 
-	archiveCommand := flag.NewFlagSet("archive", flag.ExitOnError)
-	pageArchiveFlag := archiveCommand.String("page", "", "Name of the page to be archived.")
-	gallerypageArchiveFlag := archiveCommand.String("gallery", "", "Name of the gallery to be archived.")
-
-	unarchiveCommand := flag.NewFlagSet("unarchive", flag.ExitOnError)
-	pageUnarchiveFlag := unarchiveCommand.String("page", "", "Name of the page to be unarchived.")
-	gallerypageUnarchiveFlag := unarchiveCommand.String("gallery", "", "Name of the gallery to be unarchived.")
-
-	// postCommand := flag.NewFlagSet("post", flag.ExitOnError)
-	// pagePostFlag := postCommand.String("page", "", "Name of the page to be posted.")
-
-	// unpostCommand := flag.NewFlagSet("unpost", flag.ExitOnError)
-	// pageUnpostFlag := unpostCommand.String("page", "", "Name of the page to be unposted.")
-
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
 		fmt.Println("The most commonly used stare commands are: \n")
 		fmt.Println(" init          Initialize a stare website.\n")
 		fmt.Println(" render        Renders the website.\n")
+		fmt.Println(" gallery   	Creates the gallery. Run before render command.")
 		fmt.Println(" create")
-		fmt.Println("   -page       Creates a new page")
-		fmt.Println("   -gallery    Create a new gallery")
-		fmt.Println(" post")
-		fmt.Println("   -page       Posts a page")
-		fmt.Println(" unpost")
-		fmt.Println("   -page       Unposts a page")
-		fmt.Println(" archive")
-		fmt.Println("   -page       Archives a page")
-		fmt.Println("   -gallery    Archives a gallery")
-		fmt.Println(" unarchive")
-		fmt.Println("   -page       Unarchives a page")
-		fmt.Println("   -gallery    Unarchives a gallery")
+		fmt.Println("   -page       Creates a new page.")
+		fmt.Println("   -gallery    Create a new gallery.")
+		fmt.Println(" post			Posts a document.")
+		fmt.Println(" unpost		Unposts a document.")
+		fmt.Println(" archive		Archives a document.")
+		fmt.Println(" unarchive		Unarchives a document.")
 		return
 	}
 
@@ -122,22 +103,27 @@ func main() {
 	case "init":
 		init_site()
 	case "render":
-		fmt.Println("Rendering!")
+		fmt.Println("Rendering...")
 		startTime := time.Now()
 		render_site()
+		endTime := time.Now()
+		fmt.Println("Elapsed time:", endTime.Sub(startTime))
+	case "gallery":
+		fmt.Println("Creating the galleries...")
+		startTime := time.Now()
+		renderGalleries()
 		endTime := time.Now()
 		fmt.Println("Elapsed time:", endTime.Sub(startTime))
 	case "create":
 		createCommand.Parse(os.Args[2:])
 	case "archive":
-		archiveCommand.Parse(os.Args[2:])
+		archive(os.Args[2:])
 	case "unarchive":
-		unarchiveCommand.Parse(os.Args[2:])
+		unarchive(os.Args[2:])
 	case "post":
-		post(os.Args[2:], "bodies/")
-		//postCommand.Parse(os.Args[2:])
+		post(os.Args[2:])
 	case "unpost":
-		unpost(os.Args[2:], "bodies/")
+		unpost(os.Args[2:])
 	case "list":
 		sourcelist()
 	default:
@@ -149,29 +135,10 @@ func main() {
 		if *pageCreateFlag == "" && *galleryCreateFlag == "" {
 			fmt.Println("Please provide the page or gallery name using -page or -gallery parameter.")
 		} else if *pageCreateFlag != "" {
-			createPage(filepath.Join("bodies", "pages"), *pageCreateFlag)
+			createPage(filepath.Join("bodies", "pages"), *pageCreateFlag, "")
 		} else if *galleryCreateFlag != "" {
 			createGallery(*galleryCreateFlag)
 		}
 	}
 
-	if archiveCommand.Parsed() {
-		if *pageArchiveFlag == "" && *gallerypageArchiveFlag == "" {
-			fmt.Println("Please provide the page or blog name using -page or -gallery option.")
-		} else if *pageArchiveFlag != "" {
-			archive_page(*pageArchiveFlag)
-		} else if *gallerypageArchiveFlag != "" {
-			archive_gallery(*gallerypageArchiveFlag)
-		}
-	}
-
-	if unarchiveCommand.Parsed() {
-		if *pageUnarchiveFlag == "" && *gallerypageUnarchiveFlag == "" {
-			fmt.Println("Please provide the page or gallery name using -page, -blog or -gallery option.")
-		} else if *pageUnarchiveFlag != "" {
-			unarchive_page(*pageUnarchiveFlag)
-		} else if *gallerypageUnarchiveFlag != "" {
-			unarchive_gallery(*gallerypageUnarchiveFlag)
-		}
-	}
 }

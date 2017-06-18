@@ -12,7 +12,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-
 // This file contains the functions for archiving and unarchiving web pages and galleries
 
 // TODO
@@ -22,184 +21,108 @@
 package main
 
 import (
-    "fmt"
-    "os"
-    "io/ioutil"
-    "path/filepath"
-    "strings"
+	"fmt"
+	// 	"io/ioutil"
+	// 	"os"
+	"path/filepath"
+	"strings"
 )
 
-func archive_page(pagename string) {
-    
-    var language string
-    
-    if site.multiLang == true {
-        language = strings.Split(pagename, "/")[0]
-        pagename = strings.Split(pagename, "/")[1]
-    }
-    
-    path := filepath.Join("archive", language, "pages")
+func archive(name []string) {
 
-    _, err := os.Stat(path) 
-    if err != nil {
-        os.MkdirAll(path, 0755)
-    }
-    
-    pages, _ := filepath.Glob(site.pagedir+"/"+pagename+"*") 
-    
-    page := findItem(pages)
-    
-    if len(page) > 0 {
-        filename := strings.Split(page,"/")[len(strings.Split(page,"/"))-1]
-        fmt.Println("Archiving page", filename)
-        move(page, "archive/pages/"+language+"/"+filename)
-    }
-    
+	bodies := mapBodies("bodies")
+	pages := mapPages(bodies)
+	for _, vn := range name {
+		var items []string
+		for _, vp := range pages {
+			if strings.Contains(vp.path, vn) {
+				items = append(items, vp.body_path)
+			}
+		}
+		item := findItem(items)
+
+		if len(item) > 0 {
+			fmt.Println("Archiving page", item)
+			move(item, filepath.Join("archive", item))
+		}
+	}
 }
 
-func unarchive_page(pagename string) {
-    
-    var language string
-    
-    if site.multiLang == true {
-        language = strings.Split(pagename, "/")[0]
-        pagename = strings.Split(pagename, "/")[1]
-    }
-    
-    path := filepath.Join("archive", language, "pages")
+func unarchive(name []string) {
 
-    pages, _ := filepath.Glob(path+"/"+pagename+"*") 
-    
-    page := findItem(pages)
-    
-    if len(page) > 0 {
-        filename := strings.Split(page,"/")[len(strings.Split(page,"/"))-1]
-        fmt.Println("Unarchiving page", filename)
-        move(page, "pages/"+language+"/"+filename)
-    }  
-    
+	bodies := mapBodies(filepath.Join("archive", "bodies"))
+	pages := mapPages(bodies)
+	for _, vn := range name {
+		var items []string
+		for _, vp := range pages {
+			if strings.Contains(vp.path, vn) {
+				items = append(items, vp.body_path)
+			}
+		}
+		item := findItem(items)
+		if len(item) > 0 {
+			fmt.Println("Unarchiving page", item)
+			move(item, strings.Replace(item, "archive"+string(filepath.Separator), "", 1))
+		}
+	}
 }
 
-func archive_blog(blogname string) {
-    
-    var language string
+// func archive_gallery(galleryname string) {
 
-    if site.multiLang == true {
-        language = strings.Split(blogname, "/")[0]
-        blogname = strings.Split(blogname, "/")[1]
-    }   
-    
-    // Check whether the path exists and create if necessary
-    
-    path := "archive/pages/"+language+"/blogs/"
+// 	var galleries []string
 
-    _, err := os.Stat(path) 
-    if err != nil {
-        os.MkdirAll(path, 0755)
-    }
-    
-    // Read all blog posts which contain the entered string
-    
-    blogposts, _ := filepath.Glob("pages/"+language+"/blogs/"+blogname+"*")
+// 	path := filepath.Join("archive", "pages", "gallery")
+// 	_, err := os.Stat(path)
+// 	if err != nil {
+// 		os.MkdirAll(path, 0755)
+// 	}
 
-    // Select the correct blog in case of name ambiguity
-    
-    blogpost := findItem(blogposts)
-    
-    if len(blogpost) > 0 {
-        filename := strings.Split(blogpost,"/")[len(strings.Split(blogpost,"/"))-1]
-        fmt.Println("Archiving blog post", filename)
-        move(blogpost, "archive/pages/"+language+"/blogs/"+filename)
-    }
-    
-}
+// 	g, _ := ioutil.ReadDir(filepath.Join(site.pagedir, site.gallerydir))
 
-func unarchive_blog(blogname string) {
+// 	for i := 0; i < len(g); i++ {
+// 		if g[i].IsDir() == true {
+// 			galleries = append(galleries, g[i].Name())
+// 		}
+// 	}
 
-    var language string
+// 	gallery := findItem(galleries)
 
-    if site.multiLang == true {
-        language = strings.Split(blogname, "/")[0]
-        blogname = strings.Split(blogname, "/")[1]
-    }   
-    
-    // Check whether the path exists and create if necessary
-    
-    path := "archive/pages/"+language+"/blogs/"
+// 	fmt.Println("Archiving gallery", gallery)
+// 	movedir(filepath.Join("pages", "gallery", gallery), filepath.Join(path, gallery))
 
-    // Read all blog posts which contain the entered string
-    
-    blogposts, _ := filepath.Glob(path+blogname+"*")
+// 	files, _ := ioutil.ReadDir(site.gallerydir)
 
-    // Select the correct blog in case of name ambiguity
-    
-    blogpost := findItem(blogposts)
-    
-    if len(blogpost) > 0 {
-        filename := strings.Split(blogpost,"/")[len(strings.Split(blogpost,"/"))-1]
-        fmt.Println("Unarchiving blog post", filename)
-        move(blogpost, "pages/"+language+"/blogs/"+filename)
-    }
-    
-}
+// 	if len(files) == 0 {
+// 		cfg.Section("general").NewKey("gallery", "")
+// 		cfg.SaveTo("config.ini")
+// 	}
+// }
 
-func archive_gallery(galleryname string) {
-    
-    var galleries []string
-    
-    path := filepath.Join("archive", "pages", "gallery")
-    _, err := os.Stat(path) 
-    if err != nil {
-        os.MkdirAll(path, 0755)
-    }
+// func unarchive_gallery(galleryname string) {
 
-    g, _ := ioutil.ReadDir(filepath.Join(site.pagedir, site.gallerydir))
+// 	var galleries []string
 
-    for i := 0; i < len(g); i++ {
-        if g[i].IsDir() == true {
-            galleries = append(galleries, g[i].Name())
-        }
-    }
-     
-    
-    gallery := findItem(galleries)
+// 	path := filepath.Join("archive", "pages", "gallery")
+// 	_, err := os.Stat(path)
+// 	if err != nil {
+// 		os.MkdirAll(path, 0755)
+// 	}
 
-    fmt.Println("Archiving gallery", gallery)
-    movedir(filepath.Join("pages", "gallery", gallery), filepath.Join(path, gallery))
-    
-    files, _ := ioutil.ReadDir(site.gallerydir)
-    
-    if len(files) == 0 {
-        cfg.Section("general").NewKey("gallery", "")
-        cfg.SaveTo("config.ini")
-    }
-}
+// 	g, _ := ioutil.ReadDir(filepath.Join(path))
 
-func unarchive_gallery(galleryname string) {
-    
-    var galleries []string
+// 	for i := 0; i < len(g); i++ {
+// 		if g[i].IsDir() == true {
+// 			galleries = append(galleries, g[i].Name())
+// 		}
+// 	}
 
-    path := filepath.Join("archive", "pages", "gallery")
-    _, err := os.Stat(path) 
-    if err != nil {
-        os.MkdirAll(path, 0755)
-    }
+// 	gallery := findItem(galleries)
 
-    g, _ := ioutil.ReadDir(filepath.Join(path))
+// 	fmt.Println("Archiving gallery", gallery)
+// 	movedir(filepath.Join(path, gallery), filepath.Join("pages", "gallery", gallery))
 
-    for i := 0; i < len(g); i++ {
-        if g[i].IsDir() == true {
-            galleries = append(galleries, g[i].Name())
-        }
-    }
-
-    gallery := findItem(galleries)
-
-    fmt.Println("Archiving gallery", gallery)
-    movedir(filepath.Join(path, gallery), filepath.Join("pages","gallery", gallery))
-    
-    if site.gallery == false {
-        cfg.Section("general").NewKey("gallery", "y")
-        cfg.SaveTo("config.ini")
-    }
-}
+// 	if site.gallery == false {
+// 		cfg.Section("general").NewKey("gallery", "y")
+// 		cfg.SaveTo("config.ini")
+// 	}
+// }

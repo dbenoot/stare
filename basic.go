@@ -32,7 +32,7 @@ import (
 func mapBodies(path string) map[string]string {
 
 	bodies := make(map[string]string)
-	formats := []string{"html", "HTML", "md", "MD"}
+	formats := []string{".html", ".HTML", ".md", ".MD"}
 
 	files := []string{}
 	err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
@@ -41,14 +41,13 @@ func mapBodies(path string) map[string]string {
 	})
 
 	for _, file := range files {
-		if stringInSlice(strings.Split(file, ".")[len(strings.Split(file, "."))-1], formats) == true {
+		if stringInSlice(filepath.Ext(file), formats) == true {
 			content, _ := ioutil.ReadFile(file)
 			bodies[file] = string(content)
 		}
 	}
-	if err != nil {
-		fmt.Println(err)
-	}
+
+	check(err)
 	return bodies
 }
 
@@ -108,8 +107,6 @@ func mapPages(bodies map[string]string) map[int]Page {
 		content.Execute(w, map[string]string{"Css": filepath.Join(t.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(t.rel_path, "js") + string(filepath.Separator), "Index": t.index, "Img": filepath.Join(t.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(t.rel_path, "pages") + string(filepath.Separator)})
 
 		t.content = w.String()
-
-		fmt.Println(t.path, t.filename, t.filetype)
 
 		c[i] = t
 		i++
@@ -364,4 +361,13 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+func exists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }
