@@ -57,6 +57,7 @@ type Page struct {
 	body_path    string
 	path         string
 	navbar       string
+	gallery      string
 	output       string
 	rel_path     string
 	base_path    string
@@ -69,6 +70,12 @@ type Nav struct {
 	orig_key  int
 	base_path string
 	filename  string
+}
+
+type Gallery struct {
+	link  string
+	thumb string
+	name  string
 }
 
 type Site struct {

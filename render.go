@@ -22,7 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	// "strings"
+	"strings"
 	"text/template"
 )
 
@@ -39,6 +39,7 @@ func render_site() {
 	writeOutput(pages)
 
 	copySrc()
+	copyGalleries()
 
 }
 
@@ -102,13 +103,43 @@ func createNavbar(pages map[int]Page) map[int]Page {
 }
 
 func createGalleryBody(pages map[int]Page) map[int]Page {
+
+	c := make(map[int]Gallery)
+
+	// get pages which should be present in the gallery
+
 	for key, value := range pages {
-		fmt.Println(key, value.rel_path)
+
+		if strings.Contains(value.body_path, filepath.Join("bodies", "galleries")) {
+			gal := c[key]
+			fmt.Println(value.rel_path, "-", value.base_path, "-", value.path)
+			gal.link = filepath.Join(value.path)
+			gal.thumb = filepath.Join(value.base_path, "gallery.jpg")
+			gal.name = value.menu_name
+			c[key] = gal
+		}
+
+	}
+
+	u := bytes.NewBufferString("")
+	for _, value := range c {
+
+		g, _ := template.ParseFiles("templates/gallery_item.html")
+
+		g.Execute(u, map[string]string{"Subgallerylink": value.link, "Subgallerythumb": value.thumb, "Subgalleryname": value.name})
+	}
+
+	for key, _ := range pages {
+
+		var tmp = pages[key]
+		tmp.gallery = u.String()
+		pages[key] = tmp
+
 	}
 
 	return pages
-	// map[string]string{"Subgallerylink":,"Subgallerythumb":,"Subgalleryname"}
 }
+
 func createOutput(pages map[int]Page) map[int]Page {
 
 	head, _ := template.ParseFiles("templates/header_template.html")
@@ -124,7 +155,7 @@ func createOutput(pages map[int]Page) map[int]Page {
 		head.Execute(header, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 		foot.Execute(footer, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 
-		t.Execute(w, map[string]string{"Header": header.String(), "Navbar": value.navbar, "Body": value.content, "Footer": footer.String(), "Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
+		t.Execute(w, map[string]string{"Header": header.String(), "Navbar": value.navbar, "Gallery": value.gallery, "Body": value.content, "Footer": footer.String(), "Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 
 		var tmp = pages[key]
 		tmp.output = w.String()
@@ -219,6 +250,26 @@ func copySrc() {
 			copydir(srcItems[i], "rendered"+string(filepath.Separator)+filepath.Base(srcItems[i]))
 		} else {
 			copyfile(srcItems[i], "rendered"+string(filepath.Separator)+filepath.Base(srcItems[i]))
+		}
+	}
+}
+
+func copyGalleries() {
+
+	srcItems, _ := filepath.Glob(filepath.Join("bodies", "galleries", "*"))
+
+	for i := 0; i < len(srcItems); i++ {
+		file, err := os.Open(srcItems[i])
+		check(err)
+		defer file.Close()
+
+		fi, err := file.Stat()
+		check(err)
+
+		if fi.IsDir() {
+			copydir(srcItems[i], filepath.Join("rendered", "galleries", filepath.Base(srcItems[i])))
+		} else {
+			copyfile(srcItems[i], filepath.Join("rendered", "galleries", filepath.Base(srcItems[i])))
 		}
 	}
 }
