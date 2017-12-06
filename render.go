@@ -52,34 +52,29 @@ func createNavbar(pages map[int]Page) map[int]Page {
 	for key, value := range pages {
 
 		nav := c[value.menu_order]
-		
+
 		if value.menu_present {
 			nav.name = value.menu_name
 			nav.path = value.path
 			nav.orig_key = key
 			nav.base_path = value.base_path
 			nav.filename = value.filename
-			
+
 			// Check that the menu order is unique and if so, write to map
-			
+
 			if _, ok := c[value.menu_order]; ok {
-    			fmt.Println("Menu order in the posted menu page -", value.menu_name, "-", value.menu_present,"- is not unique (same as page -", c[value.menu_order].name,"-). Please correct.")
-    			os.Exit(2)
+				fmt.Println("Menu order in the posted menu page -", value.menu_name, "-", value.menu_present, "- is not unique (same as page -", c[value.menu_order].name, "-). Please correct.")
+				os.Exit(2)
 			} else {
 				c[value.menu_order] = nav
 			}
 		}
 	}
 
-
 	// make the keys consecutive
-
-fmt.Println(getKeys(c))
 
 	keys := getKeys(c)
 	sort.Ints(keys)
-	
-fmt.Println(keys)
 
 	// add info in navbar_item and record answers in response
 
@@ -90,25 +85,25 @@ fmt.Println(keys)
 	for i := 0; i < len(pages); i++ {
 		u := bytes.NewBufferString("")
 		w := bytes.NewBufferString("")
-		
+
 		// initialize j as 0, and don't use the range c val; otherwise the navbar will not be in the correct order
-		
+
 		j := 0
-		
+
 		// iterate over c
-		
+
 		for _, _ = range c {
-			
+
 			// set class to active when page is the same as nav
-			
+
 			if pages[i].path == c[keys[j]].path {
 				navact = "class=\"active\""
 			} else {
 				navact = ""
 			}
-			
+
 			t.Execute(w, map[string]string{"Navactive": navact, "Navlink": filepath.Join(c[keys[j]].base_path, pages[i].rel_path, c[keys[j]].filename), "Navitem": c[keys[j]].name})
-			
+
 			j++
 		}
 
@@ -129,7 +124,7 @@ func createGalleryBody(pages map[int]Page) map[int]Page {
 	// get pages which should be present in the gallery
 
 	for key, value := range pages {
-fmt.Println("ok, got here: ", value.body_path)
+
 		if strings.Contains(value.body_path, filepath.Join("bodies", "galleries")) {
 			gal := c[key]
 			fmt.Println(value.rel_path, "-", value.base_path, "-", value.path)
