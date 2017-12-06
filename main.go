@@ -92,9 +92,9 @@ func main() {
 
 	if len(os.Args) == 1 {
 		fmt.Println("usage: stare <command> [<args>]")
-		fmt.Println("The most commonly used stare commands are: \n")
-		fmt.Println(" init          Initialize a stare website.\n")
-		fmt.Println(" render        Renders the website.\n")
+		fmt.Println("The most commonly used stare commands are: ")
+		fmt.Println(" init          Initialize a stare website.")
+		fmt.Println(" render        Renders the website.")
 		fmt.Println(" gallery   	Creates the gallery. Run before render command.")
 		fmt.Println(" create")
 		fmt.Println("   -page       Creates a new page.")

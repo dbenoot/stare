@@ -47,12 +47,12 @@ func createNavbar(pages map[int]Page) map[int]Page {
 
 	c := make(map[int]Nav)
 
-	// get pages which should be present in the navbar
+	// get pages which should be present in the navbar and their values
 
 	for key, value := range pages {
 
 		nav := c[value.menu_order]
-
+		
 		if value.menu_present {
 			nav.name = value.menu_name
 			nav.path = value.path
@@ -61,15 +61,28 @@ func createNavbar(pages map[int]Page) map[int]Page {
 			nav.filename = value.filename
 		}
 
+		// Check that the menu order is unique and if so, write to map
+
+		if _, ok := c[value.menu_order]; ok {
+    		fmt.Println("Menu order in the posted menu pages is not unique. Please correct.")
+    		os.Exit(2)
+		} else {
 		c[value.menu_order] = nav
+		}
 	}
+
 
 	// make the keys consecutive
 
+fmt.Println(getKeys(c))
+
 	keys := getKeys(c)
 	sort.Ints(keys)
+	
+fmt.Println(keys)
 
 	// add info in navbar_item and record answers in response
+
 	n, _ := template.ParseFiles("templates/navbar_template.html")
 	t, _ := template.ParseFiles("templates/navbar_item.html")
 	var navact string
@@ -77,17 +90,25 @@ func createNavbar(pages map[int]Page) map[int]Page {
 	for i := 0; i < len(pages); i++ {
 		u := bytes.NewBufferString("")
 		w := bytes.NewBufferString("")
+		
+		// initialize j as 0, and don't use the range c val; otherwise the navbar will not be in the correct order
+		
 		j := 0
+		
+		// iterate over c
+		
 		for _, _ = range c {
-
+			
+			// set class to active when page is the same as nav
+			
 			if pages[i].path == c[keys[j]].path {
 				navact = "class=\"active\""
 			} else {
 				navact = ""
 			}
-
+			
 			t.Execute(w, map[string]string{"Navactive": navact, "Navlink": filepath.Join(c[keys[j]].base_path, pages[i].rel_path, c[keys[j]].filename), "Navitem": c[keys[j]].name})
-
+			
 			j++
 		}
 
@@ -96,7 +117,6 @@ func createNavbar(pages map[int]Page) map[int]Page {
 		var tmp = pages[i]
 		tmp.navbar = u.String()
 		pages[i] = tmp
-
 	}
 
 	return pages
@@ -154,6 +174,8 @@ func createOutput(pages map[int]Page) map[int]Page {
 
 		head.Execute(header, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 		foot.Execute(footer, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
+
+		fmt.Println(header.String())
 
 		t.Execute(w, map[string]string{"Header": header.String(), "Navbar": value.navbar, "Gallery": value.gallery, "Body": value.content, "Footer": footer.String(), "Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 
