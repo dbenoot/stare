@@ -59,15 +59,15 @@ func createNavbar(pages map[int]Page) map[int]Page {
 			nav.orig_key = key
 			nav.base_path = value.base_path
 			nav.filename = value.filename
-		}
-
-		// Check that the menu order is unique and if so, write to map
-
-		if _, ok := c[value.menu_order]; ok {
-    		fmt.Println("Menu order in the posted menu pages is not unique. Please correct.")
-    		os.Exit(2)
-		} else {
-		c[value.menu_order] = nav
+			
+			// Check that the menu order is unique and if so, write to map
+			
+			if _, ok := c[value.menu_order]; ok {
+    			fmt.Println("Menu order in the posted menu page -", value.menu_name, "-", value.menu_present,"- is not unique (same as page -", c[value.menu_order].name,"-). Please correct.")
+    			os.Exit(2)
+			} else {
+				c[value.menu_order] = nav
+			}
 		}
 	}
 
@@ -129,7 +129,7 @@ func createGalleryBody(pages map[int]Page) map[int]Page {
 	// get pages which should be present in the gallery
 
 	for key, value := range pages {
-
+fmt.Println("ok, got here: ", value.body_path)
 		if strings.Contains(value.body_path, filepath.Join("bodies", "galleries")) {
 			gal := c[key]
 			fmt.Println(value.rel_path, "-", value.base_path, "-", value.path)
@@ -174,8 +174,6 @@ func createOutput(pages map[int]Page) map[int]Page {
 
 		head.Execute(header, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 		foot.Execute(footer, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
-
-		fmt.Println(header.String())
 
 		t.Execute(w, map[string]string{"Header": header.String(), "Navbar": value.navbar, "Gallery": value.gallery, "Body": value.content, "Footer": footer.String(), "Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 
