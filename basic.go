@@ -17,7 +17,7 @@
 package main
 
 import (
-	"bytes"
+	// "bytes"
 	"fmt"
 	"github.com/russross/blackfriday"
 	"io"
@@ -26,7 +26,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"text/template"
+	// "text/template"
 )
 
 func mapBodies(path string) map[string]string {
@@ -65,11 +65,14 @@ func mapPages(bodies map[string]string) map[int]Page {
 		t.filetype = strings.ToLower(filepath.Ext(key))
 
 		t.body_path, _ = filepath.Rel("", key)
+
+		// define path
+
 		t.path = strings.Replace(t.body_path, "bodies"+string(filepath.Separator), "", 1)
 
 		// define the relative path
 
-		if strings.Contains(filepath.Dir(t.path), "pages") {
+		if strings.Contains(filepath.Dir(t.path), "pages") || strings.Contains(filepath.Dir(t.path), "galleries") {
 			t.rel_path = filepath.Join("..")
 		} else {
 			t.rel_path = filepath.Join(".")
@@ -99,14 +102,16 @@ func mapPages(bodies map[string]string) map[int]Page {
 
 			content_temp2 := blackfriday.MarkdownCommon([]byte(content_temp))
 			content_temp = string(content_temp2)
+
+			// content, err := template.New("body").Parse(content_temp)
+			// check(err)
+			// w := bytes.NewBufferString("")
+			// content.Execute(w, map[string]string{"Css": filepath.Join(t.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(t.rel_path, "js") + string(filepath.Separator), "Index": t.index, "Img": filepath.Join(t.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(t.rel_path, "pages") + string(filepath.Separator)})
+			// t.content = w.String()
+
 		}
 
-		content, err := template.New("body").Parse(content_temp)
-		check(err)
-		w := bytes.NewBufferString("")
-		content.Execute(w, map[string]string{"Css": filepath.Join(t.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(t.rel_path, "js") + string(filepath.Separator), "Index": t.index, "Img": filepath.Join(t.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(t.rel_path, "pages") + string(filepath.Separator)})
-
-		t.content = w.String()
+		t.content = content_temp
 
 		c[i] = t
 		i++

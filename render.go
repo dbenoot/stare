@@ -52,7 +52,6 @@ func createNavbar(pages map[int]Page) map[int]Page {
 	for key, value := range pages {
 
 		nav := c[value.menu_order]
-
 		if value.menu_present {
 			nav.name = value.menu_name
 			nav.path = value.path
@@ -63,7 +62,7 @@ func createNavbar(pages map[int]Page) map[int]Page {
 			// Check that the menu order is unique and if so, write to map
 
 			if _, ok := c[value.menu_order]; ok {
-				fmt.Println("Menu order in the posted menu page -", value.menu_name, "-", value.menu_present, "- is not unique (same as page -", c[value.menu_order].name, "-). Please correct.")
+				fmt.Println("Menu order in the posted menu page -", value.menu_name, "- is not unique (same as page -", c[value.menu_order].name, "-). Please correct.")
 				os.Exit(2)
 			} else {
 				c[value.menu_order] = nav
@@ -101,8 +100,7 @@ func createNavbar(pages map[int]Page) map[int]Page {
 			} else {
 				navact = ""
 			}
-
-			t.Execute(w, map[string]string{"Navactive": navact, "Navlink": filepath.Join(c[keys[j]].base_path, pages[i].rel_path, c[keys[j]].filename), "Navitem": c[keys[j]].name})
+			t.Execute(w, map[string]string{"Navactive": navact, "Navlink": filepath.Join(pages[i].rel_path, c[keys[j]].base_path, c[keys[j]].filename), "Navitem": c[keys[j]].name})
 
 			j++
 		}
@@ -113,7 +111,6 @@ func createNavbar(pages map[int]Page) map[int]Page {
 		tmp.navbar = u.String()
 		pages[i] = tmp
 	}
-
 	return pages
 }
 
@@ -127,7 +124,6 @@ func createGalleryBody(pages map[int]Page) map[int]Page {
 
 		if strings.Contains(value.body_path, filepath.Join("bodies", "galleries")) {
 			gal := c[key]
-			fmt.Println(value.rel_path, "-", value.base_path, "-", value.path)
 			gal.link = filepath.Join(value.path)
 			gal.thumb = filepath.Join(value.base_path, "gallery.jpg")
 			gal.name = value.menu_name
@@ -136,22 +132,20 @@ func createGalleryBody(pages map[int]Page) map[int]Page {
 
 	}
 
-	u := bytes.NewBufferString("")
-	for _, value := range c {
+	for key, pageValue := range pages {
 
-		g, _ := template.ParseFiles("templates/gallery_item.html")
+		u := bytes.NewBufferString("")
+		for _, value := range c {
 
-		g.Execute(u, map[string]string{"Subgallerylink": value.link, "Subgallerythumb": value.thumb, "Subgalleryname": value.name})
-	}
-
-	for key, _ := range pages {
+			g, _ := template.ParseFiles("templates/gallery_item.html")
+			g.Execute(u, map[string]string{"Subgallerylink": filepath.Join(pageValue.rel_path, value.link), "Subgallerythumb": filepath.Join(pageValue.rel_path, value.thumb), "Subgalleryname": value.name})
+		}
 
 		var tmp = pages[key]
 		tmp.gallery = u.String()
 		pages[key] = tmp
 
 	}
-
 	return pages
 }
 
@@ -159,18 +153,23 @@ func createOutput(pages map[int]Page) map[int]Page {
 
 	head, _ := template.ParseFiles("templates/header_template.html")
 	foot, _ := template.ParseFiles("templates/footer_template.html")
+
 	t, _ := template.ParseFiles("templates/page_template.html")
 
 	i := 0
 	for key, value := range pages {
+		body, _ := template.New("body").Parse(value.content)
 		header := bytes.NewBufferString("")
 		footer := bytes.NewBufferString("")
-		w := bytes.NewBufferString("")
+		parsedContent := bytes.NewBufferString("")
 
+		w := bytes.NewBufferString("")
 		head.Execute(header, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 		foot.Execute(footer, map[string]string{"Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 
-		t.Execute(w, map[string]string{"Header": header.String(), "Navbar": value.navbar, "Gallery": value.gallery, "Body": value.content, "Footer": footer.String(), "Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
+		body.Execute(parsedContent, map[string]string{"Header": header.String(), "Navbar": value.navbar, "Gallery": value.gallery, "Body": value.content, "Footer": footer.String(), "Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
+
+		t.Execute(w, map[string]string{"Header": header.String(), "Navbar": value.navbar, "Gallery": value.gallery, "Body": parsedContent.String(), "Footer": footer.String(), "Css": filepath.Join(value.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(value.rel_path, "js") + string(filepath.Separator), "Index": value.index, "Img": filepath.Join(value.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(value.rel_path, "pages") + string(filepath.Separator)})
 
 		var tmp = pages[key]
 		tmp.output = w.String()
