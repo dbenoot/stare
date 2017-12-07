@@ -72,8 +72,10 @@ func mapPages(bodies map[string]string) map[int]Page {
 
 		// define the relative path
 
-		if strings.Contains(filepath.Dir(t.path), "pages") || strings.Contains(filepath.Dir(t.path), "galleries") {
+		if strings.Contains(filepath.Dir(t.path), "pages") {
 			t.rel_path = filepath.Join("..")
+		} else if strings.Contains(filepath.Dir(t.path), "galleries") {
+			t.rel_path = filepath.Join("..", "..")
 		} else {
 			t.rel_path = filepath.Join(".")
 		}

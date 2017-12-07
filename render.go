@@ -30,6 +30,9 @@ func render_site() {
 
 	RemoveContentsLeaveGit("rendered")
 
+	copySrc()
+	copyGalleries()
+
 	bodies := mapBodies("bodies")
 	pages := mapPages(bodies)
 	pages = qPosted(pages)
@@ -38,9 +41,16 @@ func render_site() {
 	pages = createOutput(pages)
 	writeOutput(pages)
 
-	copySrc()
-	copyGalleries()
+}
 
+func qPosted(pages map[int]Page) map[int]Page {
+	c := make(map[int]Page)
+	for key, value := range pages {
+		if value.posted {
+			c[key] = value
+		}
+	}
+	return c
 }
 
 func createNavbar(pages map[int]Page) map[int]Page {
@@ -181,16 +191,6 @@ func createOutput(pages map[int]Page) map[int]Page {
 	return pages
 }
 
-func qPosted(pages map[int]Page) map[int]Page {
-	c := make(map[int]Page)
-	for key, value := range pages {
-		if value.posted {
-			c[key] = value
-		}
-	}
-	return c
-}
-
 func writeOutput(pages map[int]Page) {
 
 	os.Mkdir(filepath.Join(".", "rendered"), os.ModePerm)
@@ -203,15 +203,15 @@ func writeOutput(pages map[int]Page) {
 		err := os.MkdirAll(filepath.Dir(newPath), os.ModePerm)
 		check(err)
 
-		_, err = os.Stat(newPath)
-		if err != nil {
+		// _, err = os.Stat(newPath)
+		// if err != nil {
 
-			f, err := os.Create(newPath)
-			check(err)
-			defer f.Close()
+		f, err := os.Create(newPath)
+		check(err)
+		defer f.Close()
 
-			f.WriteString(pages[i].output)
-		}
+		f.WriteString(pages[i].output)
+		// }
 	}
 }
 
