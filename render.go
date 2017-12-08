@@ -170,7 +170,7 @@ func createOutput(pages map[int]Page) map[int]Page {
 	i := 0
 	for key, value := range pages {
 		// read template in string
-		//select the standard or custom header
+		// select the standard or custom header
 
 		if len(value.custom_header) > 0 {
 			if _, err := os.Stat(value.custom_header); err == nil {
@@ -217,21 +217,21 @@ func writeOutput(pages map[int]Page) {
 
 	for i := 0; i < len(pages); i++ {
 
-		// var f *File
+		var f *os.File
 
 		newPath := filepath.Join(".", "rendered", pages[i].path)
 		err := os.MkdirAll(filepath.Dir(newPath), os.ModePerm)
 		check(err)
 
-		// _, err = os.Stat(newPath)
-		// if err != nil {
+		_, err = os.Stat(newPath)
+		if err != nil {
+			f, err = os.Create(newPath)
+			check(err)
+		}
 
-		f, err := os.Create(newPath)
-		check(err)
 		defer f.Close()
 
 		f.WriteString(pages[i].output)
-		// }
 	}
 }
 
@@ -305,5 +305,8 @@ func copyGalleries() {
 		} else {
 			copyfile(srcItems[i], filepath.Join("rendered", "galleries", filepath.Base(srcItems[i])))
 		}
+
+		os.Remove(filepath.Join("rendered", "galleries", filepath.Base(srcItems[i]), "gallery.html"))
+
 	}
 }

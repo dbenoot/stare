@@ -18,7 +18,7 @@ package main
 
 import (
 	"bytes"
-	// "fmt"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -39,7 +39,7 @@ func renderGalleries() {
 	removeThumbs(pictures)
 
 	for _, value := range galleries {
-		os.Remove(filepath.Join("bodies", "galleries", value, "gallery.html"))
+		// os.Remove(filepath.Join("bodies", "galleries", value, "gallery.html"))
 		os.Remove(filepath.Join("bodies", "galleries", value, "gallery.jpg"))
 		createSubGalleries(value)
 	}
@@ -169,8 +169,11 @@ func createSubGalleries(path string) {
 		}
 	}
 
-	createPage(filepath.Join("bodies", "galleries", path), "gallery", "\n\n"+w.String())
-
+	if _, err := os.Stat(filepath.Join("bodies", "galleries", path, "gallery.html")); err == nil {
+		fmt.Println(filepath.Join("bodies", "galleries", path, "gallery.html"), "already exists. Skipped.")
+	} else {
+		createPage(filepath.Join("bodies", "galleries", path), "gallery", "\n\n"+w.String())
+	}
 }
 
 func createGalleryJpg(n string) {

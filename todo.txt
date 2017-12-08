@@ -1,1 +1,0 @@
-- check gallery HTML files before overwriting
