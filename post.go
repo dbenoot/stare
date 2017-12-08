@@ -12,47 +12,54 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-
 // Post draft pages in production
 // Unpost production pages to draft
 
 package main
 
 import (
-    "path/filepath"
-    "fmt"
-    "strings"
-    )
+	"fmt"
+	"strings"
+)
 
 var itemId int
 
-func post (name string, path string) {
-    
-    items, _ := filepath.Glob(path+"*"+name+"*")
+func post(name []string) {
 
-    // Select the correct item in case of name ambiguity
+	bodies := mapBodies("bodies")
+	pages := mapPages(bodies)
+	for _, vn := range name {
+		var items []string
+		for _, vp := range pages {
+			if strings.Contains(vp.path, vn) {
+				items = append(items, vp.body_path)
+			}
+		}
+		item := findItem(items)
 
-    item := findItem(items)
-    
-    if len(item) > 0 {
-        filename := strings.Split(item,"/")[len(strings.Split(item,"/"))-1]
-        fmt.Println("Posting", filename)
-        substitute_in_header(item, "in_draft", "posted")
-    }
-    
+		if len(item) > 0 {
+			fmt.Println("Posting", item)
+			replaceInHeader(item, "status          : ", "status          : posted")
+		}
+	}
 }
 
-func unpost (name string, path string) {
-    
-    items, _ := filepath.Glob(path+"*"+name+"*")
+func unpost(name []string) {
 
-    // Select the correct item in case of name ambiguity
-    
-    item := findItem(items)
-    
-    if len(item) > 0 {
-        filename := strings.Split(item,"/")[len(strings.Split(item,"/"))-1]
-        fmt.Println("Unposting", filename)
-        substitute_in_header(item, "posted", "in_draft")
-    }
+	bodies := mapBodies("bodies")
+	pages := mapPages(bodies)
+	for _, vn := range name {
+		var items []string
+		for _, vp := range pages {
+			if strings.Contains(vp.path, vn) {
+				items = append(items, vp.body_path)
+			}
+		}
+		item := findItem(items)
+
+		if len(item) > 0 {
+			fmt.Println("Unposting", item)
+			replaceInHeader(item, "status          : posted", "status          : ")
+		}
+	}
 }

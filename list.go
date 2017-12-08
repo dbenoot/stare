@@ -12,88 +12,70 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-
 // List of pages and galleries
-
 
 package main
 
 import (
-    "fmt"
-    "io/ioutil"
-    "path/filepath"
-    "log"
-    "strings"
-    )
+	"fmt"
+	"io/ioutil"
+	"os"
+	// "log"
+	"path/filepath"
+	"strings"
+)
 
 var j int
 
 func sourcelist() {
-    fmt.Println("PAGES")
-    j = 1
-    if site.multiLang == true {
-        for i := 0; i < len(site.languages); i++ {
-            list("pages/"+site.languages[i]+"/*.html")
-        }
-    } else {
-        list("pages/*.html")
-    }
-    
-    fmt.Println("\nBLOG POSTS")
-    j = 1
-    if site.multiLang == true {
-        for i := 0; i < len(site.languages); i++ {
-            list("pages/"+site.languages[i]+"/blogs/*.md")
-        }
-    } else {
-        list("pages/blogs/*.md")
-    }    
-    
-    
-    fmt.Println("\nGALLERIES")
-    listdir("pages/gallery")
-    
-    return
-    }
-    
-func list (folder string) {
-    files, _ := filepath.Glob(folder)
+	fmt.Println("BODIES")
+	j = 1
+	list("bodies/*.html")
 
-    
-    for i:= 0; i < len(files); i++ {
-            if checkStatus(files[i]) == false {
-                fmt.Println(j , " - " , files[i])
-            } else {
-                fmt.Println(j , " - " , files[i], " (draft)")
-            }
-           j += 1 
-    }    
-    
-    }
+	fmt.Println("\nGALLERIES")
+	listdir("bodies/galleries")
 
-func listdir (folder string) {
-    files, _ := ioutil.ReadDir(folder)
-    
-    i := 1
-    for _, f := range files {
-    fmt.Println(i, " - ", f.Name())
-    i += 1
-    }
-    }
+	return
+}
 
-func checkStatus (file string) bool {
-    input, err := ioutil.ReadFile(file)
-                if err != nil {
-                        log.Fatalln(err)
-                }
+func list(folder string) {
+	filepath.Walk("bodies", checkStatus)
+}
 
-                lines := strings.Split(string(input), "\n")
-                
-                for j := 1; j < 6; j++  {
-                        if strings.Contains(lines[j], "in_draft") == true {
-                                return true
-                        }
-                }
-    
-    return false;
+func listdir(folder string) {
+	files, _ := ioutil.ReadDir(folder)
+
+	i := 1
+	for _, f := range files {
+		fmt.Println("- ", f.Name())
+		i++
+	}
+}
+
+func visit(path string, f os.FileInfo, err error) error {
+	fmt.Printf("Visited: %s\n", path)
+	return nil
+}
+
+func checkStatus(file string, f os.FileInfo, err error) error {
+	fi, err := os.Stat(file)
+	check(err)
+
+	if fi.IsDir() == false {
+
+		input, err := ioutil.ReadFile(file)
+		check(err)
+
+		lines := strings.Split(string(input), "\n")
+
+		for j := 1; j < 6; j++ {
+			if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == true {
+				fmt.Println("- ", file, " \t posted")
+			} else if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == false {
+				fmt.Println("- ", file, " \t draft")
+			}
+		}
+	}
+
+	return nil
 }
