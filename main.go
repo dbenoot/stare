@@ -46,22 +46,23 @@ var site = Site{
 // define Page, Nav, Site
 
 type Page struct {
-	filename     string
-	filetype     string
-	time         string
-	menu_present bool
-	menu_order   int
-	menu_name    string
-	posted       bool
-	content      string
-	body_path    string
-	path         string
-	navbar       string
-	gallery      string
-	output       string
-	rel_path     string
-	base_path    string
-	index        string
+	filename      string
+	filetype      string
+	time          string
+	menu_present  bool
+	menu_order    int
+	menu_name     string
+	custom_header string
+	posted        bool
+	content       string
+	body_path     string
+	path          string
+	navbar        string
+	gallery       string
+	output        string
+	rel_path      string
+	base_path     string
+	index         string
 }
 
 type Nav struct {

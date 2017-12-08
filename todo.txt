@@ -1,0 +1,2 @@
+- check gallery HTML files before overwriting
+- add custom template functionality via header

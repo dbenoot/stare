@@ -60,7 +60,7 @@ func mapPages(bodies map[string]string) map[int]Page {
 
 		t := c[i]
 
-		t.menu_present, t.menu_order, t.menu_name, t.posted, t.time, content_temp = parsePage(value)
+		t.menu_present, t.menu_order, t.menu_name, t.posted, t.time, t.custom_header, content_temp = parsePage(value)
 
 		t.filetype = strings.ToLower(filepath.Ext(key))
 
@@ -121,15 +121,15 @@ func mapPages(bodies map[string]string) map[int]Page {
 	return c
 }
 
-func parsePage(input string) (bool, int, string, bool, string, string) {
+func parsePage(input string) (bool, int, string, bool, string, string, string) {
 
 	var menu_present, posted bool
 	var menu_order int
-	var menu_name, time, content string
+	var menu_name, time, content, custom_header string
 
 	lines := strings.Split(string(input), "\n")
 
-	for j := 1; j < 6; j++ {
+	for j := 1; j < 7; j++ {
 		if strings.Contains(lines[j], "posted") == true {
 			posted = true
 		}
@@ -142,16 +142,19 @@ func parsePage(input string) (bool, int, string, bool, string, string) {
 		if strings.Contains(lines[j], "menu name") == true {
 			menu_name = strings.TrimSpace(strings.Split(lines[j], ":")[1])
 		}
+		if strings.Contains(lines[j], "custom header") == true {
+			custom_header = strings.TrimSpace(strings.Split(lines[j], ":")[1])
+		}
 		if strings.Contains(lines[j], "created on") == true {
 			time = strings.TrimSpace(strings.Split(lines[j], ":")[1])
 		}
 	}
 
-	for i := 7; i < len(lines); i++ {
+	for i := 8; i < len(lines); i++ {
 		content = content + lines[i] + "\n"
 	}
 
-	return menu_present, menu_order, menu_name, posted, time, content
+	return menu_present, menu_order, menu_name, posted, time, custom_header, content
 
 }
 

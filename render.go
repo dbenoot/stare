@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -164,10 +165,29 @@ func createOutput(pages map[int]Page) map[int]Page {
 	head, _ := template.ParseFiles("templates/header_template.html")
 	foot, _ := template.ParseFiles("templates/footer_template.html")
 
-	t, _ := template.ParseFiles("templates/page_template.html")
+	var fi []byte
 
 	i := 0
 	for key, value := range pages {
+		// read template in string
+		//select the standard or custom header
+
+		if len(value.custom_header) > 0 {
+			if _, err := os.Stat(value.custom_header); err == nil {
+				fi, _ = ioutil.ReadFile(value.custom_header)
+			} else {
+				fi, _ = ioutil.ReadFile("templates/page_template.html")
+				fmt.Println("Custom template", value.custom_header, "does not exist. Default template used.")
+			}
+		} else {
+			fi, _ = ioutil.ReadFile("templates/page_template.html")
+			// t, _ = template.ParseFiles("templates/page_template.html")
+		}
+
+		// read string in template file
+
+		t, _ := template.New("template").Parse(string(fi))
+
 		body, _ := template.New("body").Parse(value.content)
 		header := bytes.NewBufferString("")
 		footer := bytes.NewBufferString("")
