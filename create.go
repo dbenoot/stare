@@ -45,7 +45,7 @@ func createPage(path string, pagename string, extra string) {
 		check(err)
 		defer f.Close()
 
-		content := "------------------------------------------------------------------------\ncreated on      : " + now + "\npresent in menu : n\nmenu order      : 0\nmenu name       : " + pagename + "\nstatus          : draft\ncustom header   : \n------------------------------------------------------------------------" + extra
+		content := "------------------------------------------------------------------------\ncreated on      : " + now + "\npresent in menu : n\nmenu order      : 0\nmenu name       : " + pagename + "\nstatus          : draft\ncustom template : \n------------------------------------------------------------------------" + extra
 
 		_, err = f.WriteString(content)
 	}

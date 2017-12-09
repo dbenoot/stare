@@ -142,7 +142,7 @@ func parsePage(input string) (bool, int, string, bool, string, string, string) {
 		if strings.Contains(lines[j], "menu name") == true {
 			menu_name = strings.TrimSpace(strings.Split(lines[j], ":")[1])
 		}
-		if strings.Contains(lines[j], "custom header") == true {
+		if strings.Contains(lines[j], "custom template") == true {
 			custom_header = strings.TrimSpace(strings.Split(lines[j], ":")[1])
 		}
 		if strings.Contains(lines[j], "created on") == true {
