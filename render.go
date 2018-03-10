@@ -116,6 +116,8 @@ func createNavbar(pages map[int]Page) map[int]Page {
 			j++
 		}
 
+		// put the navbar in the page and template in common ties
+
 		n.Execute(u, map[string]string{"Navlist": w.String(), "Index": pages[i].index, "Css": filepath.Join(pages[i].rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(pages[i].rel_path, "js") + string(filepath.Separator), "Img": filepath.Join(pages[i].rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(pages[i].rel_path, "pages") + string(filepath.Separator)})
 
 		var tmp = pages[i]
