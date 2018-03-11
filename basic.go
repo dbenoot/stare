@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"log"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -369,7 +370,7 @@ func stringInSlice(a string, list []string) bool {
 
 func check(e error) {
 	if e != nil {
-		panic(e)
+		log.Fatal(e)
 	}
 }
 
