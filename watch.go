@@ -15,39 +15,39 @@
 package main
 
 import (
-   "log"
+   "fmt"
    "github.com/go-fsnotify/fsnotify"
 )
 
 func watch() {
 
+  fmt.Println("Watching updates and rendering. Press ctrl+c to stop.")
+
    watcher, err := fsnotify.NewWatcher()
-   if err != nil {
-       log.Fatal(err)
-   }
+   check(err)
+
    defer watcher.Close()
 
    done := make(chan bool)
+
    go func() {
        for {
            select {
-           case event := <-watcher.Events:
-               log.Println("event:", event)
-               if event.Op&fsnotify.Write == fsnotify.Write {
-                   log.Println("modified file:", event.Name)
-               }
-               render_site()
-           case err := <-watcher.Errors:
-               log.Println("error:", err)
+            case <-watcher.Events:
+              render_site()
+            case err := <-watcher.Errors:
+              check(err)
            }
+
+
+
        }
    }()
 
    err = watcher.Add("bodies")
    err = watcher.Add("src")
    err = watcher.Add("templates")
-   if err != nil {
-       log.Fatal(err)
-   }
+   check(err)
+
    <-done
 }
