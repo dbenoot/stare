@@ -96,6 +96,7 @@ func main() {
 		fmt.Println("The most commonly used stare commands are: ")
 		fmt.Println(" init          Initialize a stare website.")
 		fmt.Println(" render        Renders the website.")
+		fmt.Println(" watch					Watches for changes and renders when a change happens.")
 		fmt.Println(" gallery   	Creates the gallery. Run before render command.")
 		fmt.Println(" create")
 		fmt.Println("   -page       Creates a new page.")
@@ -134,6 +135,8 @@ func main() {
 		unpost(os.Args[2:])
 	case "list":
 		sourcelist()
+	case "watch":
+		watch()
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
