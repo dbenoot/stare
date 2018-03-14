@@ -21,7 +21,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/go-ini/ini"
 	"os"
 	"path/filepath"
 	"time"
@@ -29,18 +28,12 @@ import (
 
 // define variables
 
-var cfg, _ = ini.LooseLoad("config.ini")
-
 var site = Site{
 	pagedir:     "pages",
 	blogdir:     "blogs",
 	srcdir:      "src",
 	gallerydir:  "gallery",
 	templatedir: "templates",
-	multiLang:   cfg.Section("general").Key("multiple_language_support").MustBool(),
-	primaryLang: cfg.Section("general").Key("primary_language").String(),
-	languages:   cfg.Section("general").Key("languages").Strings(","),
-	gallery:     cfg.Section("general").Key("gallery").MustBool(),
 }
 
 // define Page, Nav, Site
@@ -80,9 +73,7 @@ type Gallery struct {
 }
 
 type Site struct {
-	pagedir, blogdir, srcdir, gallerydir, templatedir, primaryLang string
-	languages                                                      []string
-	multiLang, gallery                                             bool
+	pagedir, blogdir, srcdir, gallerydir, templatedir string
 }
 
 func main() {
