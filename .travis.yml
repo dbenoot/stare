@@ -9,5 +9,5 @@ install:
   - go get -u github.com/russross/blackfriday
   - go get -u github.com/shurcooL/sanitized_anchor_name
   - go get -u github.com/oliamb/cutter
-  - go get -u github.com/fsnotify/fsnotify
-  - go get -u github.com/go-fsnotify/fsnotify
+  - go get -u github.com/rjeczalik/notify
+

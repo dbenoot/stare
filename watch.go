@@ -16,34 +16,39 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-fsnotify/fsnotify"
+	"github.com/rjeczalik/notify"
 )
 
 func watch() {
 
 	fmt.Println("Watching updates and rendering. Press ctrl+c to stop.")
 
-	watcher, err := fsnotify.NewWatcher()
+	// Make the channel buffered to ensure no event is dropped. Notify will drop
+	// an event if the receiver is not able to keep up the sending pace.
+
+	c := make(chan notify.EventInfo, 10)
+
+	// Set up a watchpoint listening on events within recursive working directory.
+	// Dispatch all events separately to c.
+
+	err := notify.Watch("bodies/...", c, notify.All)
+	err = notify.Watch("src/...", c, notify.All)
+	err = notify.Watch("templates/...", c, notify.All)
 	check(err)
-	defer watcher.Close()
+	defer notify.Stop(c)
 
 	done := make(chan bool)
 
 	go func() {
 		for {
 			select {
-			case <-watcher.Events:
+			case <-c:
+				fmt.Printf(".")
 				render_site()
-			case err := <-watcher.Errors:
-				check(err)
 			}
 		}
-	}()
 
-	err = watcher.Add("bodies")
-	err = watcher.Add("src")
-	err = watcher.Add("templates")
-	check(err)
+	}()
 
 	<-done
 }
