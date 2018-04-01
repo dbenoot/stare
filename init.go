@@ -115,4 +115,5 @@ var dirs = []string{
 	filepath.Join("bodies", "pages"),
 	filepath.Join("bodies", "galleries"),
 	"templates",
+	"snapshots",
 }

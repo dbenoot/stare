@@ -96,6 +96,7 @@ func main() {
 		fmt.Println(" unpost			Unposts a document.")
 		fmt.Println(" archive		Archives a document.")
 		fmt.Println(" unarchive		Unarchives a document.")
+		fmt.Println(" snap          Create a snapshot of the current rendered version.")
 		return
 	}
 
@@ -128,6 +129,8 @@ func main() {
 		sourcelist()
 	case "watch":
 		watch()
+	case "snap":
+		snap()
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
