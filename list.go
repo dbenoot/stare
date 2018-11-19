@@ -14,34 +14,29 @@
 
 // List of pages and galleries
 
-//TODO = make list use mapBodies & mapPages to remove non-stare files
-
 package main
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	// "log"
-	"path/filepath"
-	"strings"
 )
 
-var j int
-
 func sourcelist() {
+
+	bodies := mapBodies("bodies")
+	pages := mapPages(bodies)
+
 	fmt.Println("BODIES")
-	j = 1
-	list("bodies/*.html")
+	fmt.Println("   Name in menu\t  Posted?\t  File path")
+	for _, value := range pages {
+		fmt.Println("- ", value.menu_name, " \t ", value.posted, " \t ", value.path)
+	}
 
 	fmt.Println("\nGALLERIES")
 	listdir("bodies/galleries")
 
 	return
-}
-
-func list(folder string) {
-	filepath.Walk("bodies", checkStatus)
 }
 
 func listdir(folder string) {
@@ -56,28 +51,5 @@ func listdir(folder string) {
 
 func visit(path string, f os.FileInfo, err error) error {
 	fmt.Printf("Visited: %s\n", path)
-	return nil
-}
-
-func checkStatus(file string, f os.FileInfo, err error) error {
-	fi, err := os.Stat(file)
-	check(err)
-
-	if fi.IsDir() == false {
-
-		input, err := ioutil.ReadFile(file)
-		check(err)
-
-		lines := strings.Split(string(input), "\n")
-
-		for j := 1; j < 6; j++ {
-			if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == true {
-				fmt.Println("- ", file, " \t posted")
-			} else if strings.Contains(lines[j], "status          :") && strings.Contains(lines[j], "posted") == false {
-				fmt.Println("- ", file, " \t draft")
-			}
-		}
-	}
-
 	return nil
 }
