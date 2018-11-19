@@ -22,8 +22,8 @@ import (
 	"github.com/russross/blackfriday"
 	"io"
 	"io/ioutil"
-	"os"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -58,68 +58,87 @@ func mapPages(bodies map[string]string) map[int]Page {
 	c := make(map[int]Page)
 	i := 0
 	for key, value := range bodies {
+		if checkValidPage(value) == true {
+			t := c[i]
 
-		t := c[i]
+			t.menu_present, t.menu_order, t.menu_name, t.posted, t.time, t.custom_header, content_temp = parsePage(value)
 
-		t.menu_present, t.menu_order, t.menu_name, t.posted, t.time, t.custom_header, content_temp = parsePage(value)
+			t.filetype = strings.ToLower(filepath.Ext(key))
 
-		t.filetype = strings.ToLower(filepath.Ext(key))
+			t.body_path, _ = filepath.Rel("", key)
 
-		t.body_path, _ = filepath.Rel("", key)
+			// define path
 
-		// define path
+			t.path = strings.Replace(t.body_path, "bodies"+string(filepath.Separator), "", 1)
 
-		t.path = strings.Replace(t.body_path, "bodies"+string(filepath.Separator), "", 1)
+			// define the relative path
 
-		// define the relative path
+			if strings.Contains(filepath.Dir(t.path), "pages") {
+				t.rel_path = filepath.Join("..")
+			} else if strings.Contains(filepath.Dir(t.path), "galleries") {
+				t.rel_path = filepath.Join("..", "..")
+			} else {
+				t.rel_path = filepath.Join(".")
+			}
 
-		if strings.Contains(filepath.Dir(t.path), "pages") {
-			t.rel_path = filepath.Join("..")
-		} else if strings.Contains(filepath.Dir(t.path), "galleries") {
-			t.rel_path = filepath.Join("..", "..")
-		} else {
-			t.rel_path = filepath.Join(".")
+			// define the base_path
+
+			t.base_path, t.filename = filepath.Split(t.path)
+
+			// define the location of the index relative to the page
+
+			t.index = filepath.Join(t.rel_path, "index.html")
+
+			// Render md to html
+
+			if t.filetype == ".md" {
+
+				// change path to .html
+
+				t.path = t.path[0:len(t.path)-len(t.filetype)] + ".html"
+
+				// change output filename to .html
+
+				t.filename = t.filename[0:len(t.filename)-len(t.filetype)] + ".html"
+
+				// Render markdown to html
+
+				content_temp2 := blackfriday.MarkdownCommon([]byte(content_temp))
+				content_temp = string(content_temp2)
+
+				// content, err := template.New("body").Parse(content_temp)
+				// check(err)
+				// w := bytes.NewBufferString("")
+				// content.Execute(w, map[string]string{"Css": filepath.Join(t.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(t.rel_path, "js") + string(filepath.Separator), "Index": t.index, "Img": filepath.Join(t.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(t.rel_path, "pages") + string(filepath.Separator)})
+				// t.content = w.String()
+
+			}
+
+			t.content = content_temp
+
+			c[i] = t
+			i++
 		}
-
-		// define the base_path
-
-		t.base_path, t.filename = filepath.Split(t.path)
-
-		// define the location of the index relative to the page
-
-		t.index = filepath.Join(t.rel_path, "index.html")
-
-		// Render md to html
-
-		if t.filetype == ".md" {
-
-			// change path to .html
-
-			t.path = t.path[0:len(t.path)-len(t.filetype)] + ".html"
-
-			// change output filename to .html
-
-			t.filename = t.filename[0:len(t.filename)-len(t.filetype)] + ".html"
-
-			// Render markdown to html
-
-			content_temp2 := blackfriday.MarkdownCommon([]byte(content_temp))
-			content_temp = string(content_temp2)
-
-			// content, err := template.New("body").Parse(content_temp)
-			// check(err)
-			// w := bytes.NewBufferString("")
-			// content.Execute(w, map[string]string{"Css": filepath.Join(t.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(t.rel_path, "js") + string(filepath.Separator), "Index": t.index, "Img": filepath.Join(t.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(t.rel_path, "pages") + string(filepath.Separator)})
-			// t.content = w.String()
-
-		}
-
-		t.content = content_temp
-
-		c[i] = t
-		i++
 	}
 	return c
+}
+
+func checkValidPage(input string) bool {
+
+	var header string
+
+	lines := strings.Split(string(input), "\n")
+
+	for j := 1; j < 7; j++ {
+		header = header + lines[j]
+	}
+
+	if strings.Contains(header, "status") == true && strings.Contains(header, "present in menu") == true && strings.Contains(header, "menu order") == true && strings.Contains(header, "menu name") == true && strings.Contains(header, "created on") == true {
+		return true
+	} else {
+		return false
+	}
+
 }
 
 func parsePage(input string) (bool, int, string, bool, string, string, string) {
