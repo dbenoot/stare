@@ -14,6 +14,8 @@
 
 // List of pages and galleries
 
+//TODO = make list use mapBodies & mapPages to remove non-stare files
+
 package main
 
 import (
