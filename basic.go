@@ -106,12 +106,6 @@ func mapPages(bodies map[string]string) map[int]Page {
 				content_temp2 := blackfriday.MarkdownCommon([]byte(content_temp))
 				content_temp = string(content_temp2)
 
-				// content, err := template.New("body").Parse(content_temp)
-				// check(err)
-				// w := bytes.NewBufferString("")
-				// content.Execute(w, map[string]string{"Css": filepath.Join(t.rel_path, "css") + string(filepath.Separator), "Js": filepath.Join(t.rel_path, "js") + string(filepath.Separator), "Index": t.index, "Img": filepath.Join(t.rel_path, "img") + string(filepath.Separator), "Page": filepath.Join(t.rel_path, "pages") + string(filepath.Separator)})
-				// t.content = w.String()
-
 			}
 
 			t.content = content_temp
@@ -129,16 +123,20 @@ func checkValidPage(input string) bool {
 
 	lines := strings.Split(string(input), "\n")
 
-	for j := 1; j < 7; j++ {
-		header = header + lines[j]
-	}
+	if len(lines) >= 7 {
 
-	if strings.Contains(header, "status") == true && strings.Contains(header, "present in menu") == true && strings.Contains(header, "menu order") == true && strings.Contains(header, "menu name") == true && strings.Contains(header, "created on") == true {
-		return true
+		for j := 1; j < 7; j++ {
+			header = header + lines[j]
+		}
+
+		if strings.Contains(header, "status") == true && strings.Contains(header, "present in menu") == true && strings.Contains(header, "menu order") == true && strings.Contains(header, "menu name") == true && strings.Contains(header, "created on") == true {
+			return true
+		} else {
+			return false
+		}
 	} else {
 		return false
 	}
-
 }
 
 func parsePage(input string) (bool, int, string, bool, string, string, string) {
