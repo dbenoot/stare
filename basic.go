@@ -123,9 +123,9 @@ func checkValidPage(input string) bool {
 
 	lines := strings.Split(string(input), "\n")
 
-	if len(lines) >= 7 {
+	if len(lines) >= 8 {
 
-		for j := 1; j < 7; j++ {
+		for j := 1; j < 8; j++ {
 			header = header + lines[j]
 		}
 
@@ -147,7 +147,7 @@ func parsePage(input string) (bool, int, string, bool, string, string, string) {
 
 	lines := strings.Split(string(input), "\n")
 
-	for j := 1; j < 7; j++ {
+	for j := 1; j < 8; j++ {
 		if strings.Contains(lines[j], "posted") == true {
 			posted = true
 		}
@@ -168,7 +168,7 @@ func parsePage(input string) (bool, int, string, bool, string, string, string) {
 		}
 	}
 
-	for i := 8; i < len(lines); i++ {
+	for i := 9; i < len(lines); i++ {
 		content = content + lines[i] + "\n"
 	}
 

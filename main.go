@@ -94,9 +94,11 @@ func main() {
 		fmt.Println("   -gallery		Create a new gallery.")
 		fmt.Println(" post			Posts a document.")
 		fmt.Println(" unpost			Unposts a document.")
+		fmt.Println(" list			Lists all documents.")
 		fmt.Println(" archive		Archives a document.")
 		fmt.Println(" unarchive		Unarchives a document.")
 		fmt.Println(" snap          Create a snapshot of the current rendered version.")
+		fmt.Println(" tag			Add a tag to a document. Syntax: stare tag [document] [tag].")
 		return
 	}
 
@@ -131,6 +133,8 @@ func main() {
 		watch()
 	case "snap":
 		snap()
+	case "tag":
+		tag(os.Args[2:])
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
